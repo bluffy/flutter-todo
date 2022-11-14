@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cbl/cbl.dart';
+import '../db/db_helper.dart';
 
 enum TaskActionStatus {
   none,
@@ -9,8 +10,18 @@ enum TaskActionStatus {
 }
 
 class TaskController extends ChangeNotifier {
-  String? selectedTaskId;
+  String selectedTaskId = "";
   TaskActionStatus action = TaskActionStatus.none;
+  bool isFormOpen = false;
+  int selectedTaskIdx = 0;
+  int selectedFolder = 0;
+
+  void setSelectedID(String id, int idx, int folder) {
+    selectedTaskId = id;
+    selectedTaskIdx = idx;
+    selectedFolder = folder;
+    notifyListeners();
+  }
 }
 
 class TaskModel extends ChangeNotifier {
@@ -18,24 +29,139 @@ class TaskModel extends ChangeNotifier {
   ///  final List<int> _itemIds = [];
   ///
   late TaskController _controller;
-  final List<int> _itemIds = [];
+  var taskfolders = <TaskFolder>[];
+
   set controller(TaskController controller) {
     _controller = controller;
     // Notify listeners, in case the new catalog provides information
     // different from the previous one. For example, availability of an item
     // might have changed.
-    //notifyListeners();
+    notifyListeners();
   }
 
   void openFormular(TaskActionStatus act) {
     _controller.action = act;
+    _controller.isFormOpen = true;
     _controller.notifyListeners();
-
-    //isFormOpen.value = true;
   }
 
-  get test {
-    return _controller.action.toString();
+  void closeFormular() {
+    _controller.action = TaskActionStatus.none;
+    _controller.isFormOpen = false;
+    _controller.notifyListeners();
+  }
+
+  void getAllTasks() async {
+    var result = await DBHelper.query();
+    TaskFolder taskfolder = TaskFolder(tasks: []);
+    List<TaskFolder> taskfolders = [];
+
+    for (var task in result) {
+      taskfolder.tasks.add(task);
+    }
+    taskfolders.add(taskfolder);
+
+    this.taskfolders = taskfolders;
+    notifyListeners();
+  }
+
+  void doSorting(int oldItemIndex, int oldListIndex, int newItemIndex,
+      int newListIndex) async {
+    List<TaskListResult> oldTaskList = [];
+
+    for (var task in taskfolders[oldListIndex].tasks) {
+      oldTaskList.add(task);
+    }
+
+    if (oldListIndex != newListIndex) {
+      List<TaskListResult> newTaskList = [];
+      for (var task in taskfolders[newListIndex].tasks) {
+        newTaskList.add(task);
+      }
+      var movedItem = oldTaskList.removeAt(oldItemIndex);
+
+      newTaskList.insert(newItemIndex, movedItem);
+      await DBHelper.sortList(newTaskList);
+    } else {
+      var movedItem = oldTaskList.removeAt(oldItemIndex);
+
+      oldTaskList.insert(newItemIndex, movedItem);
+      await DBHelper.sortList(oldTaskList);
+    }
+
+    getAllTasks();
+/*
+    var movedItem = taskfolders[oldListIndex].tasks.removeAt(oldItemIndex);
+    taskfolders[newListIndex].tasks.insert(newItemIndex, movedItem);
+    */
+  }
+
+  Future<Task?> get(String id) async {
+    final document = await DBHelper.selectById(id);
+
+    if (document == null) {
+      return null;
+    }
+
+    return Task(
+      id: document.id,
+      title: document.string('title'),
+      description: document.string('description'),
+      sort: document.integer('sort'),
+      date: document.string('date'),
+      dateTime: document.integer('dateTime'),
+      isDone: document.integer('isDone'),
+      status: document.integer('status'),
+      time: document.string('string'),
+    );
+  }
+
+  Future<String> addTask(String title, String description) async {
+    var sorting = 0;
+    if (_controller.selectedTaskId != "") {
+      final task = taskfolders[_controller.selectedFolder]
+          .tasks[_controller.selectedTaskIdx];
+      sorting = task.sort;
+    }
+    final Task newTask = Task(
+        title: title.trim(), description: description.trim(), sort: sorting);
+    final id = await DBHelper.insert(newTask);
+
+    _controller.setSelectedID(
+        id, _controller.selectedTaskIdx + 1, _controller.selectedFolder);
+
+    closeFormular();
+    getAllTasks();
+/*
+    taskfolders[selectedFolder.value].tasks.forEachIndexed((index, element) {
+      if (element.id == id) {
+        setSelectedID(id, index, selectedFolder.value);
+      }
+    });
+    */
+
+    return id;
+  }
+
+  Future<String> updateTask(String title, String description) async {
+    final Task newTask = Task(
+      id: _controller.selectedTaskId,
+      title: title.trim(),
+      description: description.trim(),
+    );
+    final id = await DBHelper.update(newTask);
+    closeFormular();
+    getAllTasks();
+    return id;
+    //_notificationService.scheduleNotification(newTask, id);
+  }
+
+  Future<void> removeTask() async {
+    await DBHelper.remove(_controller.selectedTaskId);
+    _controller.setSelectedID("", 0, 0);
+    closeFormular();
+    getAllTasks();
+    //_notificationService.scheduleNotification(newTask, id);
   }
 }
 
@@ -86,9 +212,6 @@ class Task {
     }
     if (title != null) {
       mutableDoc['title'].string = title;
-    }
-    if (description != null) {
-      mutableDoc['description'].string = description;
     }
     if (description != null) {
       mutableDoc['description'].string = description;

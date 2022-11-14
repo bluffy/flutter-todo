@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
               update: (context, controller, model) {
                 if (model == null) throw ArgumentError.notNull('cart');
                 model.controller = controller;
+                model.getAllTasks();
                 return model;
               })
         ],

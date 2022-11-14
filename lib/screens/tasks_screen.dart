@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_todo/models/task_model.dart';
+import 'package:flutter_todo/utils/dialogs.dart';
 import 'package:provider/provider.dart';
+import '../widgets/task/display_tasks.dart';
 
 class TaskPage extends StatelessWidget {
   TaskPage({Key? key}) : super(key: key);
@@ -25,19 +27,14 @@ class TaskPage extends StatelessWidget {
                 icon: const Icon(Icons.delete),
                 tooltip: "Aufgabe Löschen",
                 onPressed: () {
-                  /*
-                  Get.defaultDialog(
-                    middleText: "Wirklich löschen?",
-                    textCancel: "Nein",
-                    textConfirm: "Ja",
-                    onConfirm: () {
-                    //  _taskController.removeTask();
-                     // Get.back();
-                    },
-                  
-                  );
-                  */
-                  //_taskController.openFormular(ActionStatus.add);
+                  CustomDialog.showConfirmDialog(
+                      context: context,
+                      text: "Wirklich löschen?",
+                      onPressedOk: () {
+                        taskmodel
+                            .removeTask()
+                            .then((value) => Navigator.pop(context));
+                      });
                 },
               ),
             ),
@@ -55,8 +52,6 @@ class TaskPage extends StatelessWidget {
               ),
             ),
           ),
-          Text("test" + taskcontroller.action.toString()),
-          Text("test2" + taskmodel.test)
         ]),
         /*
         body: GetX<TaskController>(builder: (controller) {
@@ -80,11 +75,9 @@ class TaskPage extends StatelessWidget {
 
         body: SafeArea(
           child: Container(
-              /*
-              color: (_taskController.isFormOpen.value)
+              color: (taskcontroller.isFormOpen)
                   ? Theme.of(context).disabledColor
                   : null,
-                  */
               width: double.infinity,
               height: double.infinity,
 
@@ -95,7 +88,7 @@ class TaskPage extends StatelessWidget {
               child: SingleChildScrollView(
                   child: Column(
                 children: [
-                  //   DispayTasks(),
+                  DispayTasks(),
                 ],
               ))
               /*
