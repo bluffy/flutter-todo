@@ -13,13 +13,11 @@ class TaskController extends ChangeNotifier {
   String selectedTaskId = "";
   TaskActionStatus action = TaskActionStatus.none;
   bool isFormOpen = false;
-  int selectedTaskIdx = 0;
   int selectedFolder = 0;
 
-  void setSelectedID(String id, int idx, int folder) {
+  void setSelectedID(String id, int folderidx) {
     selectedTaskId = id;
-    selectedTaskIdx = idx;
-    selectedFolder = folder;
+    selectedFolder = folderidx;
     notifyListeners();
   }
 }
@@ -30,6 +28,12 @@ class TaskModel extends ChangeNotifier {
   ///
   late TaskController _controller;
   var taskfolders = <TaskFolder>[];
+
+  TaskListResult getTaskFromList() {
+    return taskfolders[_controller.selectedFolder].tasks.firstWhere(
+        (TaskListResult task) => task.id == _controller.selectedTaskId,
+        orElse: () => TaskListResult(id: "", sort: 0, title: ""));
+  }
 
   set controller(TaskController controller) {
     _controller = controller;
@@ -51,7 +55,7 @@ class TaskModel extends ChangeNotifier {
     _controller.notifyListeners();
   }
 
-  void getAllTasks() async {
+  void getAllTasks({bool? notify}) async {
     var result = await DBHelper.query();
     TaskFolder taskfolder = TaskFolder(tasks: []);
     List<TaskFolder> taskfolders = [];
@@ -62,7 +66,9 @@ class TaskModel extends ChangeNotifier {
     taskfolders.add(taskfolder);
 
     this.taskfolders = taskfolders;
-    notifyListeners();
+    if (notify == null || notify) {
+      notifyListeners();
+    }
   }
 
   void doSorting(int oldItemIndex, int oldListIndex, int newItemIndex,
@@ -119,26 +125,19 @@ class TaskModel extends ChangeNotifier {
   Future<String> addTask(String title, String description) async {
     var sorting = 0;
     if (_controller.selectedTaskId != "") {
-      final task = taskfolders[_controller.selectedFolder]
-          .tasks[_controller.selectedTaskIdx];
-      sorting = task.sort;
+      final task = getTaskFromList();
+      if (task.id != "") {
+        sorting = task.sort;
+      }
     }
     final Task newTask = Task(
         title: title.trim(), description: description.trim(), sort: sorting);
     final id = await DBHelper.insert(newTask);
 
-    _controller.setSelectedID(
-        id, _controller.selectedTaskIdx + 1, _controller.selectedFolder);
+    _controller.setSelectedID(id, _controller.selectedFolder);
 
     closeFormular();
     getAllTasks();
-/*
-    taskfolders[selectedFolder.value].tasks.forEachIndexed((index, element) {
-      if (element.id == id) {
-        setSelectedID(id, index, selectedFolder.value);
-      }
-    });
-    */
 
     return id;
   }
@@ -157,11 +156,22 @@ class TaskModel extends ChangeNotifier {
   }
 
   Future<void> removeTask() async {
+    int idx = taskfolders[_controller.selectedFolder].tasks.indexWhere(
+        (TaskListResult task) => task.id == _controller.selectedTaskId);
+
+    var newid = "";
+
+    if (idx != -1 &&
+        idx != taskfolders[_controller.selectedFolder].tasks.length - 1) {
+      newid = taskfolders[_controller.selectedFolder].tasks[idx + 1].id;
+    }
+
     await DBHelper.remove(_controller.selectedTaskId);
-    _controller.setSelectedID("", 0, 0);
-    closeFormular();
+
+    _controller.setSelectedID(newid, _controller.selectedFolder);
     getAllTasks();
-    //_notificationService.scheduleNotification(newTask, id);
+
+    closeFormular();
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_todo/models/task_model.dart';
 
 class DispayTasks extends StatelessWidget {
-  DispayTasks({Key? key}) : super(key: key);
+  const DispayTasks({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class DispayTasks extends StatelessWidget {
                                   taskmodel.openFormular(TaskActionStatus.save);
                                 }
                                 taskcontroller.setSelectedID(
-                                    tasks[taskIdx].id, taskIdx, folderIdx);
+                                    tasks[taskIdx].id, folderIdx);
                               }
                             },
                             child: Ink(

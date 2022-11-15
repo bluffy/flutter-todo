@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/task_model.dart';
 
 class DBHelper {
-  static const int _version = 1;
+  //static const int _version = 1;
   static const String _databaseName = "bludo-test";
   static Database? _db;
   static const maxsorting = 100000000000;

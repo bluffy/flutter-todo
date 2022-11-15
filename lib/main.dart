@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
                 if (model == null) throw ArgumentError.notNull('cart');
                 model.controller = controller;
                 model.getAllTasks();
+
                 return model;
               })
         ],

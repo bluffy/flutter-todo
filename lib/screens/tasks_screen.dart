@@ -13,8 +13,8 @@ class TaskPage extends StatelessWidget {
     var taskmodel = context.watch<TaskModel>();
     var taskcontroller = context.watch<TaskController>();
 
-    taskcontroller.addListener(() => print("listen controller"));
-    taskmodel.addListener(() => print("listen taskmodel"));
+    //taskcontroller.addListener(() => print("listen controller"));
+    //taskmodel.addListener(() => print("listen taskmodel"));
 
     return Scaffold(
         key: _scaffoldKey,
@@ -87,7 +87,7 @@ class TaskPage extends StatelessWidget {
               //color: Theme.of(context).backgroundColor =
               child: SingleChildScrollView(
                   child: Column(
-                children: [
+                children: const [
                   DispayTasks(),
                 ],
               ))

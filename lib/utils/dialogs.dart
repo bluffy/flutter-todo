@@ -7,21 +7,21 @@ class CustomDialog {
       String? titel,
       String? okText,
       onPressed}) {
-    var _okText = "OK";
+    var lokText = "OK";
     if (okText != null) {
-      _okText = okText;
+      lokText = okText;
     }
 
     Widget okButton;
     // set up the button
     if (onPressed != null) {
       okButton = TextButton(
-        child: Text(_okText),
         onPressed: onPressed,
+        child: Text(lokText),
       );
     } else {
       okButton = TextButton(
-        child: Text(_okText),
+        child: Text(lokText),
         onPressed: () {
           Navigator.pop(context);
         },
@@ -55,13 +55,13 @@ class CustomDialog {
       String? okText,
       String? cancleText,
       onPressedCancle}) {
-    String _okText = "OK";
+    var lokText = "OK";
     if (okText != null) {
-      _okText = okText;
+      lokText = okText;
     }
-    String _cancleText = "Cancle";
+    String lcancleText = "Cancle";
     if (cancleText != null) {
-      _cancleText = cancleText;
+      lcancleText = cancleText;
     }
 
     Widget cancleButton;
@@ -69,20 +69,20 @@ class CustomDialog {
     if (onPressedOk != null) {
       cancleButton = TextButton(
         onPressed: onPressedCancle,
-        child: Text(_cancleText),
+        child: Text(lcancleText),
       );
     } else {
       cancleButton = TextButton(
         onPressed: () {
           Navigator.pop(context);
         },
-        child: Text(_cancleText),
+        child: Text(lcancleText),
       );
     }
 
     Widget okButton = TextButton(
       onPressed: onPressedOk,
-      child: Text(_okText),
+      child: Text(lokText),
     );
 
     // set up the AlertDialog
