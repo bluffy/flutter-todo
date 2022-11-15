@@ -40,7 +40,8 @@ class DispayTasks extends StatelessWidget {
                                   taskmodel.openFormular(TaskActionStatus.save);
                                 }
                                 taskcontroller.setSelectedID(
-                                    tasks[taskIdx].id, folderIdx);
+                                    taskID: tasks[taskIdx].id,
+                                    folderIdx: folderIdx);
                               }
                             },
                             child: Ink(
@@ -76,7 +77,7 @@ class DispayTasks extends StatelessWidget {
               child: TaskFormular()),
           DragAndDropLists(
             disableScrolling: true,
-            itemDragOnLongPress: false,
+            itemDragOnLongPress: true,
 
             /*
               itemDragHandle: const DragHandle(

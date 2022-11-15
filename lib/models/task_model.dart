@@ -15,9 +15,11 @@ class TaskController extends ChangeNotifier {
   bool isFormOpen = false;
   int selectedFolder = 0;
 
-  void setSelectedID(String id, int folderidx) {
-    selectedTaskId = id;
-    selectedFolder = folderidx;
+  void setSelectedID({required String taskID, int? folderIdx}) {
+    selectedTaskId = taskID;
+    if (folderIdx != null) {
+      selectedFolder = folderIdx;
+    }
     notifyListeners();
   }
 }
@@ -75,6 +77,8 @@ class TaskModel extends ChangeNotifier {
       int newListIndex) async {
     List<TaskListResult> oldTaskList = [];
 
+    var itemid = taskfolders[oldListIndex].tasks[oldItemIndex].id;
+
     for (var task in taskfolders[oldListIndex].tasks) {
       oldTaskList.add(task);
     }
@@ -94,6 +98,7 @@ class TaskModel extends ChangeNotifier {
       oldTaskList.insert(newItemIndex, movedItem);
       await DBHelper.sortList(oldTaskList);
     }
+    _controller.setSelectedID(taskID: itemid);
 
     getAllTasks();
 /*
@@ -134,7 +139,7 @@ class TaskModel extends ChangeNotifier {
         title: title.trim(), description: description.trim(), sort: sorting);
     final id = await DBHelper.insert(newTask);
 
-    _controller.setSelectedID(id, _controller.selectedFolder);
+    _controller.setSelectedID(taskID: id);
 
     closeFormular();
     getAllTasks();
@@ -168,7 +173,7 @@ class TaskModel extends ChangeNotifier {
 
     await DBHelper.remove(_controller.selectedTaskId);
 
-    _controller.setSelectedID(newid, _controller.selectedFolder);
+    _controller.setSelectedID(taskID: newid);
     getAllTasks();
 
     closeFormular();
