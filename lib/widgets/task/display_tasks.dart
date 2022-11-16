@@ -37,6 +37,15 @@ class DispayTasks extends StatelessWidget {
                                 ? (bool? value) {}
                                 : null),
                     Expanded(
+                        child: Ink(
+                            color: (taskcontroller.selectedTaskId ==
+                                    tasks[taskIdx].id)
+                                ? Theme.of(context).focusColor
+                                : null,
+                            child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(tasks[taskIdx].title))))
+                    /*
                         child: InkWell(
                             onTap:
                                 (taskcontroller.action == TaskActionStatus.none)
@@ -62,7 +71,8 @@ class DispayTasks extends StatelessWidget {
                                     : null,
                                 child: Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child: Text(tasks[taskIdx].title)))))
+                                    child: Text(tasks[taskIdx].title))))  )
+                                   */
                   ]),
                 ),
                 Visibility(
@@ -85,11 +95,18 @@ class DispayTasks extends StatelessWidget {
               visible: taskcontroller.action == TaskActionStatus.add &&
                   taskcontroller.selectedTaskId == "",
               child: TaskFormular()),
-          DragAndDropLists(
-            disableScrolling: true,
-            itemDragOnLongPress: true,
+          GestureDetector(
+            onTap: (() {}),
+            child: DragAndDropLists(
+              disableScrolling: true,
+              itemDragOnLongPress: true,
+              listDragOnLongPress: false,
+              itemOnWillAccept: (incoming, target) {
+                print(incoming);
+                return true;
+              },
 
-            /*
+              /*
               itemDragHandle: const DragHandle(
                 child: Padding(
                   padding: EdgeInsets.only(right: 10),
@@ -100,13 +117,31 @@ class DispayTasks extends StatelessWidget {
                 ),
               ),
               */
-            children: contents,
-            onItemReorder:
-                (oldItemIndex, oldListIndex, newItemIndex, newListIndex) {
-              taskmodel.doSorting(
-                  oldItemIndex, oldListIndex, newItemIndex, newListIndex);
-            },
-            onListReorder: (oldListIndex, newListIndex) {},
+              /*
+              itemDragHandle: DragHandle(
+                child: Container(child: Text(""), color: Colors.red),
+              ),
+              */
+
+              /*
+                itemDragHandle: const DragHandle(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: Icon(
+                      Icons.menu,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                ),
+                */
+              children: contents,
+              onItemReorder:
+                  (oldItemIndex, oldListIndex, newItemIndex, newListIndex) {
+                taskmodel.doSorting(
+                    oldItemIndex, oldListIndex, newItemIndex, newListIndex);
+              },
+              onListReorder: (oldListIndex, newListIndex) {},
+            ),
           ),
         ],
       ),
