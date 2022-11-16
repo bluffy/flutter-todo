@@ -17,3 +17,6 @@ samples, guidance on mobile development, and a full API reference.
 
 
 - https://github.com/flutter/samples/tree/main/provider_shopper/lib
+
+Layouts:
+- https://www.freecodecamp.org/news/how-to-implement-any-ui-in-flutter/

@@ -48,51 +48,53 @@ class TaskFormular extends StatelessWidget {
 
     taskFormularfill(context, taskmodel, taskcontroller);
 
-    return Container(
-      color: Theme.of(context).backgroundColor,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Checkbox(
-              overlayColor: null,
-              onChanged: null,
-              value: false,
+    return GestureDetector(
+      child: Container(
+        color: Theme.of(context).backgroundColor,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: Checkbox(
+                overlayColor: null,
+                onChanged: null,
+                value: false,
+              ),
             ),
-          ),
-          Flexible(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: TextFormField(
-                          focusNode: titleFocus,
-                          controller: titleController,
-                          decoration: const InputDecoration(
-                            border: UnderlineInputBorder(),
-                            hintText: "Aufgabe",
-                          ),
-                        )),
-                    Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TextFormField(
-                          controller: descController,
-                          minLines: 2,
-                          maxLines: 100,
-                          decoration: const InputDecoration(
-                            hintText: "Beschreibung",
-                            border: UnderlineInputBorder(),
-                          ),
-                        )),
-                    formularFooter(context, taskmodel, taskcontroller),
-                  ]),
-            ),
-          )
-        ],
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: TextFormField(
+                            focusNode: titleFocus,
+                            controller: titleController,
+                            decoration: const InputDecoration(
+                              border: UnderlineInputBorder(),
+                              hintText: "Aufgabe",
+                            ),
+                          )),
+                      Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: TextFormField(
+                            controller: descController,
+                            minLines: 2,
+                            maxLines: 100,
+                            decoration: const InputDecoration(
+                              hintText: "Beschreibung",
+                              border: UnderlineInputBorder(),
+                            ),
+                          )),
+                      formularFooter(context, taskmodel, taskcontroller),
+                    ]),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

@@ -18,41 +18,54 @@ class TaskPage extends StatelessWidget {
 
     return Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(title: const Text('Notes'), actions: <Widget>[
-          Visibility(
-            visible: taskcontroller.selectedTaskId != "",
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: IconButton(
-                icon: const Icon(Icons.delete),
-                tooltip: "Aufgabe Löschen",
-                onPressed: () {
-                  CustomDialog.showConfirmDialog(
-                      context: context,
-                      text: "Wirklich löschen?",
-                      onPressedOk: () {
-                        taskmodel
-                            .removeTask()
-                            .then((value) => Navigator.pop(context));
-                      });
-                },
-              ),
+        appBar: AppBar(
+            flexibleSpace: GestureDetector(
+              onTap: () {
+                taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+              },
+              child: const SizedBox(height: double.infinity, child: Text("")),
             ),
-          ),
-          Visibility(
-            visible: taskcontroller.action == TaskActionStatus.none,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: IconButton(
-                icon: const Icon(Icons.add),
-                tooltip: "Neue Aufgabe",
-                onPressed: () {
-                  taskmodel.openFormular(TaskActionStatus.add);
-                },
-              ),
+            title: GestureDetector(
+              child: const Text('Notes'),
+              onTap: () {
+                taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+              },
             ),
-          ),
-        ]),
+            actions: <Widget>[
+              Visibility(
+                visible: taskcontroller.selectedTaskId != "",
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.delete),
+                    tooltip: "Aufgabe Löschen",
+                    onPressed: () {
+                      CustomDialog.showConfirmDialog(
+                          context: context,
+                          text: "Wirklich löschen?",
+                          onPressedOk: () {
+                            taskmodel
+                                .removeTask()
+                                .then((value) => Navigator.pop(context));
+                          });
+                    },
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: taskcontroller.action == TaskActionStatus.none,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: "Neue Aufgabe",
+                    onPressed: () {
+                      taskmodel.openFormular(TaskActionStatus.add);
+                    },
+                  ),
+                ),
+              ),
+            ]),
         /*
         body: GetX<TaskController>(builder: (controller) {
           //final tasks = controller.todayTasksList;
@@ -74,30 +87,35 @@ class TaskPage extends StatelessWidget {
         */
 
         body: SafeArea(
-          child: Container(
-              color: (taskcontroller.isFormOpen)
-                  ? Theme.of(context).disabledColor
-                  : null,
-              width: double.infinity,
-              height: double.infinity,
+          child: GestureDetector(
+            onTap: () {
+              taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+            },
+            child: Container(
+                color: (taskcontroller.isFormOpen)
+                    ? Theme.of(context).disabledColor
+                    : null,
+                width: double.infinity,
+                height: double.infinity,
 
-              // (_taskController.isFormOpen.value)
-              //     ? Theme.of(context).disabledColor
-              //    : null,
-              //color: Theme.of(context).backgroundColor =
-              child: SingleChildScrollView(
+                // (_taskController.isFormOpen.value)
+                //     ? Theme.of(context).disabledColor
+                //    : null,
+                //color: Theme.of(context).backgroundColor =
+                child: SingleChildScrollView(
+                    child: Column(
+                  children: const [
+                    DispayTasks(),
+                  ],
+                ))
+                /*
+            child: SingleChildScrollView(
                   child: Column(
-                children: const [
-                  DispayTasks(),
-                ],
-              ))
-              /*
-          child: SingleChildScrollView(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Tasks()])),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [Tasks()])),
         */
-              ),
+                ),
+          ),
         ));
   }
 }
