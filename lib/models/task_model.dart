@@ -12,7 +12,6 @@ enum TaskActionStatus {
 class TaskController extends ChangeNotifier {
   String selectedTaskId = "";
   TaskActionStatus action = TaskActionStatus.none;
-  bool isFormOpen = false;
   int selectedFolder = 0;
 
   void setSelectedID({required String taskID, int? folderIdx}) {
@@ -20,6 +19,7 @@ class TaskController extends ChangeNotifier {
     if (folderIdx != null) {
       selectedFolder = folderIdx;
     }
+    action = TaskActionStatus.none;
     notifyListeners();
   }
 }
@@ -46,14 +46,14 @@ class TaskModel extends ChangeNotifier {
   }
 
   void openFormular(TaskActionStatus act) {
-    _controller.action = act;
-    _controller.isFormOpen = true;
+    if (act != TaskActionStatus.none) {
+      _controller.action = act;
+    }
     _controller.notifyListeners();
   }
 
   void closeFormular() {
     _controller.action = TaskActionStatus.none;
-    _controller.isFormOpen = false;
     _controller.notifyListeners();
   }
 

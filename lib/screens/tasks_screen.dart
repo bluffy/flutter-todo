@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_todo/models/task_model.dart';
 import 'package:flutter_todo/utils/dialogs.dart';
 import 'package:provider/provider.dart';
+//import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+
 import '../widgets/task/display_tasks.dart';
 
 class TaskPage extends StatelessWidget {
@@ -13,6 +15,14 @@ class TaskPage extends StatelessWidget {
     var taskmodel = context.watch<TaskModel>();
     var taskcontroller = context.watch<TaskController>();
 
+    unSelectTask() {
+      if (taskcontroller.action == TaskActionStatus.none) {
+        taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+      } else {
+        //FlutterRingtonePlayer.playAlarm(asAlarm: false);
+      }
+    }
+
     //taskcontroller.addListener(() => print("listen controller"));
     //taskmodel.addListener(() => print("listen taskmodel"));
 
@@ -21,14 +31,15 @@ class TaskPage extends StatelessWidget {
         appBar: AppBar(
             flexibleSpace: GestureDetector(
               onTap: () {
-                taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+                //unSelectTask();
+                unSelectTask();
               },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+                unSelectTask();
               },
             ),
             actions: <Widget>[
@@ -89,10 +100,10 @@ class TaskPage extends StatelessWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
-              taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
+              unSelectTask();
             },
             child: Container(
-                color: (taskcontroller.isFormOpen)
+                color: (taskcontroller.action != TaskActionStatus.none)
                     ? Theme.of(context).disabledColor
                     : null,
                 width: double.infinity,

@@ -30,20 +30,31 @@ class DispayTasks extends StatelessWidget {
                       !(taskcontroller.selectedTaskId == tasks[taskIdx].id &&
                           taskcontroller.action == TaskActionStatus.save),
                   child: Row(children: [
-                    Checkbox(value: false, onChanged: (bool? value) {}),
+                    Checkbox(
+                        value: false,
+                        onChanged:
+                            (taskcontroller.action == TaskActionStatus.none)
+                                ? (bool? value) {}
+                                : null),
                     Expanded(
                         child: InkWell(
-                            onTap: () {
-                              if (!taskcontroller.isFormOpen) {
-                                if (taskcontroller.selectedTaskId ==
-                                    tasks[taskIdx].id) {
-                                  taskmodel.openFormular(TaskActionStatus.save);
-                                }
-                                taskcontroller.setSelectedID(
-                                    taskID: tasks[taskIdx].id,
-                                    folderIdx: folderIdx);
-                              }
-                            },
+                            onTap:
+                                (taskcontroller.action == TaskActionStatus.none)
+                                    ? () {
+                                        if (taskcontroller.action ==
+                                            TaskActionStatus.none) {
+                                          if (taskcontroller.selectedTaskId ==
+                                              tasks[taskIdx].id) {
+                                            taskmodel.openFormular(
+                                                TaskActionStatus.save);
+                                          } else {
+                                            taskcontroller.setSelectedID(
+                                                taskID: tasks[taskIdx].id,
+                                                folderIdx: folderIdx);
+                                          }
+                                        }
+                                      }
+                                    : null,
                             child: Ink(
                                 color: (taskcontroller.selectedTaskId ==
                                         tasks[taskIdx].id)
@@ -71,8 +82,7 @@ class DispayTasks extends StatelessWidget {
       child: Column(
         children: [
           Visibility(
-              visible: taskcontroller.isFormOpen &&
-                  taskcontroller.action == TaskActionStatus.add &&
+              visible: taskcontroller.action == TaskActionStatus.add &&
                   taskcontroller.selectedTaskId == "",
               child: TaskFormular()),
           DragAndDropLists(
