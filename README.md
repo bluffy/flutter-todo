@@ -17,6 +17,7 @@ samples, guidance on mobile development, and a full API reference.
 
 
 - https://github.com/flutter/samples/tree/main/provider_shopper/lib
+- https://codewithandrea.com/articles/flutter-responsive-layouts-split-view-drawer-navigation/
 
 Layouts:
 - https://www.freecodecamp.org/news/how-to-implement-any-ui-in-flutter/
