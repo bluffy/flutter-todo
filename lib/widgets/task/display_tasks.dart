@@ -6,9 +6,12 @@ import 'package:flutter_todo/models/task_model.dart';
 
 class DispayTasks extends StatelessWidget {
   const DispayTasks({Key? key}) : super(key: key);
+  final breakpoint = 600.0;
+  final menuWidth = 240.0;
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     var taskmodel = context.watch<TaskModel>();
     var taskcontroller = context.watch<TaskController>();
 
@@ -17,7 +20,8 @@ class DispayTasks extends StatelessWidget {
       final tasks = taskfolders[folderIdx].tasks;
       final children = List.generate(tasks.length, (taskIdx) {
         return DragAndDropItem(
-            canDrag: taskcontroller.action == TaskActionStatus.none,
+            canDrag: taskcontroller.selectedTaskId == tasks[taskIdx].id &&
+                taskcontroller.action == TaskActionStatus.none,
             child: Column(
               children: [
                 Visibility(
@@ -37,14 +41,46 @@ class DispayTasks extends StatelessWidget {
                                 ? (bool? value) {}
                                 : null),
                     Expanded(
-                        child: Ink(
-                            color: (taskcontroller.selectedTaskId ==
-                                    tasks[taskIdx].id)
-                                ? Theme.of(context).focusColor
-                                : null,
-                            child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(tasks[taskIdx].title))))
+                        child: GestureDetector(
+                            onTap:
+                                (taskcontroller.action == TaskActionStatus.none)
+                                    ? () {
+                                        if (taskcontroller.action ==
+                                            TaskActionStatus.none) {
+                                          if (taskcontroller.selectedTaskId ==
+                                              tasks[taskIdx].id) {
+                                            taskmodel.openFormular(
+                                                TaskActionStatus.save);
+                                          } else {
+                                            taskcontroller.setSelectedID(
+                                                taskID: tasks[taskIdx].id,
+                                                folderIdx: folderIdx);
+                                          }
+                                        }
+                                      }
+                                    : null,
+                            child: Container(
+                                color: (taskcontroller.selectedTaskId ==
+                                        tasks[taskIdx].id)
+                                    ? Theme.of(context).focusColor
+                                    : null,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(tasks[taskIdx].title),
+                                ))
+                            /*        
+                            child: InkWell(
+                              child: Ink(
+                                  color: (taskcontroller.selectedTaskId ==
+                                          tasks[taskIdx].id)
+                                      ? Theme.of(context).focusColor
+                                      : null,
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(tasks[taskIdx].title))),
+                            )*/
+                            ))
+
                     /*
                         child: InkWell(
                             onTap:
@@ -99,41 +135,19 @@ class DispayTasks extends StatelessWidget {
             onTap: (() {}),
             child: DragAndDropLists(
               disableScrolling: true,
-              itemDragOnLongPress: true,
+              itemDragOnLongPress: false,
               listDragOnLongPress: false,
-              itemOnWillAccept: (incoming, target) {
-                print(incoming);
-                return true;
-              },
-
-              /*
-              itemDragHandle: const DragHandle(
-                child: Padding(
-                  padding: EdgeInsets.only(right: 10),
-                  child: Icon(
-                    Icons.menu,
-                    color: Colors.blueGrey,
-                  ),
-                ),
-              ),
-              */
-              /*
-              itemDragHandle: DragHandle(
-                child: Container(child: Text(""), color: Colors.red),
-              ),
-              */
-
-              /*
-                itemDragHandle: const DragHandle(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 10),
-                    child: Icon(
-                      Icons.menu,
-                      color: Colors.blueGrey,
-                    ),
-                  ),
-                ),
-                */
+              itemDragHandle: (screenWidth < breakpoint)
+                  ? const DragHandle(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 10),
+                        child: Icon(
+                          Icons.menu,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                    )
+                  : null,
               children: contents,
               onItemReorder:
                   (oldItemIndex, oldListIndex, newItemIndex, newListIndex) {

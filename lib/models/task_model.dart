@@ -113,7 +113,7 @@ class TaskModel extends ChangeNotifier {
       oldTaskList.insert(newItemIndex, movedItem);
       await DBHelper.sortList(oldTaskList);
     }
-    _controller.setSelectedID(taskID: itemid);
+    //_controller.setSelectedID(taskID: itemid);
 
     getAllTasks();
 /*
