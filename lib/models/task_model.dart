@@ -9,10 +9,16 @@ enum TaskActionStatus {
   save,
 }
 
+enum TaskaAge {
+  entry,
+  tody,
+}
+
 class TaskController extends ChangeNotifier {
   String selectedTaskId = "";
   TaskActionStatus action = TaskActionStatus.none;
   int selectedFolder = 0;
+  TaskaAge page = TaskaAge.entry;
 
   void setSelectedID({required String taskID, int? folderIdx}) {
     selectedTaskId = taskID;
@@ -21,6 +27,15 @@ class TaskController extends ChangeNotifier {
     }
     action = TaskActionStatus.none;
     notifyListeners();
+  }
+
+  bool unSelectTask() {
+    if (action == TaskActionStatus.none) {
+      setSelectedID(taskID: "", folderIdx: 0);
+      return true;
+    }
+
+    return false;
   }
 }
 

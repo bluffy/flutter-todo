@@ -53,14 +53,6 @@ class TasksView extends StatelessWidget {
     var taskmodel = context.watch<TaskModel>();
     var taskcontroller = context.watch<TaskController>();
 
-    unSelectTask() {
-      if (taskcontroller.action == TaskActionStatus.none) {
-        taskcontroller.setSelectedID(taskID: "", folderIdx: 0);
-      } else {
-        //FlutterRingtonePlayer.playAlarm(asAlarm: false);
-      }
-    }
-
     //taskcontroller.addListener(() => print("listen controller"));
     //taskmodel.addListener(() => print("listen taskmodel"));
 
@@ -70,14 +62,14 @@ class TasksView extends StatelessWidget {
             flexibleSpace: GestureDetector(
               onTap: () {
                 //unSelectTask();
-                unSelectTask();
+                taskcontroller.unSelectTask();
               },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                unSelectTask();
+                taskcontroller.unSelectTask();
               },
             ),
             actions: <Widget>[
@@ -118,7 +110,7 @@ class TasksView extends StatelessWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
-              unSelectTask();
+              taskcontroller.unSelectTask();
             },
             child: Container(
                 color: (taskcontroller.action != TaskActionStatus.none)
@@ -150,12 +142,48 @@ class TasksView extends StatelessWidget {
 }
 
 class MenuView extends StatelessWidget {
+  const MenuView({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text('Menu')));
+    var taskmodel = context.watch<TaskModel>();
+    var taskcontroller = context.watch<TaskController>();
+
+    return Scaffold(
+        appBar: AppBar(
+            flexibleSpace: GestureDetector(
+              onTap: () {
+                //unSelectTask();
+                taskcontroller.unSelectTask();
+              },
+              child: const SizedBox(height: double.infinity, child: Text("")),
+            ),
+            title: GestureDetector(
+              child: const Text('Notes'),
+              onTap: () {
+                taskcontroller.unSelectTask();
+              },
+            )),
+        body: SafeArea(
+          child: GestureDetector(
+            onTap: () {
+              print("unselect");
+              taskcontroller.unSelectTask();
+            },
+            child: Container(
+              color: (taskcontroller.action != TaskActionStatus.none)
+                  ? Theme.of(context).disabledColor
+                  : null,
+              width: double.infinity,
+              height: double.infinity,
+              child: const Text(""),
+            ),
+          ),
+        ));
   }
 }
 
+/*
 class SplitView extends StatelessWidget {
   const SplitView({
     Key? key,
@@ -197,4 +225,6 @@ class SplitView extends StatelessWidget {
       );
     }
   }
+
 }
+  */
