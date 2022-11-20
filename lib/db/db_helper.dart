@@ -13,7 +13,6 @@ class DBHelper {
   static Future<void> initDatabase() async {
     try {
       if (Platform.isWindows || Platform.isLinux) {
-        // Initialize FFI
         sqfliteFfiInit();
         databaseFactory = databaseFactoryFfi;
       }
@@ -59,14 +58,7 @@ class DBHelper {
     }
   }
 
-  // Define a function that inserts dogs into the database
   static Future<String> nextID() async {
-    // Get a reference to the database.
-
-    // Insert the Dog into the correct table. You might also specify the
-    // `conflictAlgorithm` to use in case the same dog is inserted twice.
-    //
-    // In this case, replace any previous data.
     await _db!.rawUpdate("""
         UPDATE settings set max_id = max_id + 1;
         """);
@@ -74,14 +66,7 @@ class DBHelper {
     return result[0]["max_id"].toString();
   }
 
-  // Define a function that inserts dogs into the database
   static Future<String> insertTask(Task task) async {
-    // Get a reference to the database.
-
-    // Insert the Dog into the correct table. You might also specify the
-    // `conflictAlgorithm` to use in case the same dog is inserted twice.
-    //
-    // In this case, replace any previous data.
     task.id = await nextID();
     await _db!.insert(
       'tasks',
@@ -91,14 +76,7 @@ class DBHelper {
     return task.id!;
   }
 
-  // Define a function that inserts dogs into the database
   static Future<List<Map<String, Object?>>> taskList() async {
-    // Get a reference to the database.
-
-    // Insert the Dog into the correct table. You might also specify the
-    // `conflictAlgorithm` to use in case the same dog is inserted twice.
-    //
-    // In this case, replace any previous data.
     return await _db!.query('tasks', orderBy: "sort desc");
   }
 }

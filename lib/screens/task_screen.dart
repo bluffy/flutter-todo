@@ -4,7 +4,6 @@ import 'package:flutter_todo/models/task_model.dart';
 import '../utils/dialogs.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/task/display_tasks.dart';
-import '../models/task_model.dart';
 
 class TaskPage extends StatelessWidget {
   static const breakpoint = 600.0;
@@ -63,7 +62,10 @@ class TasksView extends ConsumerWidget {
             ),
             title: GestureDetector(
               child: const Text('Notes'),
-              onTap: () {},
+              onTap: () {
+                print("Notes");
+                // taskcontroller.unSelectTask();
+              },
             ),
             actions: <Widget>[
               Visibility(
@@ -93,11 +95,8 @@ class TasksView extends ConsumerWidget {
                     icon: const Icon(Icons.add),
                     tooltip: "Neue Aufgabe",
                     onPressed: () {
-                      var id = ref
-                          .read(taskskProvider.notifier)
-                          .addTask()
-                          .then((value) {
-                        print(value);
+                      ref.read(taskskProvider.notifier).addTask().then((value) {
+                        debugPrint(value);
                       });
 
                       //repo.addTask();
@@ -118,6 +117,7 @@ class TasksView extends ConsumerWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
+              print("Safe");
               // taskcontroller.unSelectTask();
             },
             child: Container(
@@ -170,7 +170,7 @@ class TaskMenuView extends StatelessWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
-              print("unselect");
+              debugPrint("unselect");
               //taskcontroller.unSelectTask();
             },
             child: Container(

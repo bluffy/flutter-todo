@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../db/db_helper.dart';
 
@@ -25,23 +24,6 @@ class Task {
       this.time,
       this.dateTime,
       this.status});
-
-/*
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['sort'] = sort;
-    data['sync_id'] = syncID;
-    data['title'] = title;
-    data['description'] = description;
-    data['is_done'] = isDone;
-    data['date'] = date;
-    data['time'] = time;
-    data['date_time'] = dateTime;
-    data['status'] = status;
-    return data;
-  }
-  */
 
   static Task fromJson(Map<String, dynamic> json) {
     return Task(
@@ -108,6 +90,7 @@ class TaskNotifier extends StateNotifier<List<Task>> {
 }
 
 final taskActionProvider = StateProvider((ref) => TaskAction.none);
+final taskSelectProvider = StateProvider((ref) => "");
 
 final taskskProvider = StateNotifierProvider<TaskNotifier, List<Task>>((ref) {
   return TaskNotifier(ref);
@@ -187,4 +170,21 @@ final taskskProvider = StateNotifierProvider<TasksNotifier, List<Task>>((ref) {
       }
     }
   }
+
+  /*
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['sort'] = sort;
+    data['sync_id'] = syncID;
+    data['title'] = title;
+    data['description'] = description;
+    data['is_done'] = isDone;
+    data['date'] = date;
+    data['time'] = time;
+    data['date_time'] = dateTime;
+    data['status'] = status;
+    return data;
+  }
+  */
   */

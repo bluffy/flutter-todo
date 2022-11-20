@@ -47,7 +47,7 @@ dependencies:
   flutter_riverpod: ^2.1.1
   path: ^1.8.2
   sqflite_common_ffi: ^2.2.0+1
-  sqlite3_flutter_libs: ^0.5.11+1
+  #sqlite3_flutter_libs: ^0.5.11+1
   sqflite: ^2.2.0+3
 
 dev_dependencies:
