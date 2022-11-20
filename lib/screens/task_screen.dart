@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_todo/db/db_helper.dart';
 import 'package:flutter_todo/models/task_model.dart';
-import 'package:flutter_todo/utils/dialogs.dart';
-import 'package:provider/provider.dart';
-//import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-
+import '../utils/dialogs.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/task/display_tasks.dart';
+import '../models/task_model.dart';
+
+enum TaskAction {
+  none,
+  add,
+  save,
+}
+
+final taskActionProvider = StateProvider((ref) => TaskAction.none);
 
 class TaskPage extends StatelessWidget {
-  TaskPage({Key? key}) : super(key: key);
+  static const breakpoint = 600.0;
+  static const menuWidth = 240.0;
 
-  final breakpoint = 600.0;
-  final menuWidth = 240.0;
+  const TaskPage({super.key});
 
   //final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
@@ -21,9 +29,9 @@ class TaskPage extends StatelessWidget {
     if (screenWidth >= breakpoint) {
       return Row(
         children: [
-          SizedBox(
-            width: 300,
-            child: MenuView(),
+          const SizedBox(
+            width: menuWidth,
+            child: TaskMenuView(),
           ),
           Container(width: 0.5, color: Colors.black),
           Expanded(child: TasksView()),
@@ -33,10 +41,10 @@ class TaskPage extends StatelessWidget {
       // narrow screen: show content, menu inside drawer
       return Scaffold(
         body: TasksView(),
-        drawer: SizedBox(
+        drawer: const SizedBox(
           width: menuWidth,
           child: Drawer(
-            child: MenuView(),
+            child: TaskMenuView(),
           ),
         ),
       );
@@ -44,37 +52,30 @@ class TaskPage extends StatelessWidget {
   }
 }
 
-class TasksView extends StatelessWidget {
+class TasksView extends ConsumerWidget {
   TasksView({Key? key}) : super(key: key);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
-  Widget build(BuildContext context) {
-    var taskmodel = context.watch<TaskModel>();
-    var taskcontroller = context.watch<TaskController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final action = ref.watch(taskActionProvider);
 
-    //taskcontroller.addListener(() => print("listen controller"));
-    //taskmodel.addListener(() => print("listen taskmodel"));
+    final repo = ref.watch(TaskRepository.provider);
 
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
             flexibleSpace: GestureDetector(
-              onTap: () {
-                //unSelectTask();
-                taskcontroller.unSelectTask();
-              },
+              onTap: () {},
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
-              onTap: () {
-                taskcontroller.unSelectTask();
-              },
+              onTap: () {},
             ),
             actions: <Widget>[
               Visibility(
-                visible: taskcontroller.selectedTaskId != "",
+                visible: (action != TaskAction.none),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: IconButton(
@@ -85,23 +86,31 @@ class TasksView extends StatelessWidget {
                           context: context,
                           text: "Wirklich löschen?",
                           onPressedOk: () {
-                            taskmodel
-                                .removeTask()
-                                .then((value) => Navigator.pop(context));
+                            DBHelper.nextID();
+                            Navigator.of(context).pop();
                           });
                     },
                   ),
                 ),
               ),
               Visibility(
-                visible: taskcontroller.action == TaskActionStatus.none,
+                visible: (action == TaskAction.none),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: IconButton(
                     icon: const Icon(Icons.add),
                     tooltip: "Neue Aufgabe",
                     onPressed: () {
-                      taskmodel.openFormular(TaskActionStatus.add);
+                      repo.addTask();
+                      //  TasksNotifier().addTask();
+                      /*
+                      var fido = Task(
+                        title: 'Fido',
+                      );
+                      //unSelectTask();
+
+                      DBHelper.insertTask(fido);
+                      */
                     },
                   ),
                 ),
@@ -110,12 +119,10 @@ class TasksView extends StatelessWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
-              taskcontroller.unSelectTask();
+              // taskcontroller.unSelectTask();
             },
             child: Container(
-                color: (taskcontroller.action != TaskActionStatus.none)
-                    ? Theme.of(context).disabledColor
-                    : null,
+                color: (0 != 0) ? Theme.of(context).disabledColor : null,
                 width: double.infinity,
                 height: double.infinity,
 
@@ -141,39 +148,34 @@ class TasksView extends StatelessWidget {
   }
 }
 
-class MenuView extends StatelessWidget {
-  const MenuView({super.key});
+class TaskMenuView extends StatelessWidget {
+  const TaskMenuView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var taskmodel = context.watch<TaskModel>();
-    var taskcontroller = context.watch<TaskController>();
-
     return Scaffold(
         appBar: AppBar(
             flexibleSpace: GestureDetector(
               onTap: () {
                 //unSelectTask();
-                taskcontroller.unSelectTask();
+                // taskcontroller.unSelectTask();
               },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                taskcontroller.unSelectTask();
+                // taskcontroller.unSelectTask();
               },
             )),
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
               print("unselect");
-              taskcontroller.unSelectTask();
+              //taskcontroller.unSelectTask();
             },
             child: Container(
-              color: (taskcontroller.action != TaskActionStatus.none)
-                  ? Theme.of(context).disabledColor
-                  : null,
+              color: (0 != 0) ? Theme.of(context).disabledColor : null,
               width: double.infinity,
               height: double.infinity,
               child: const Text(""),
@@ -182,49 +184,3 @@ class MenuView extends StatelessWidget {
         ));
   }
 }
-
-/*
-class SplitView extends StatelessWidget {
-  const SplitView({
-    Key? key,
-    required this.menu,
-    required this.content,
-    this.breakpoint = 600,
-    this.menuWidth = 240,
-  }) : super(key: key);
-  final Widget menu;
-  final Widget content;
-  final double breakpoint;
-  final double menuWidth;
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth >= breakpoint) {
-      // wide screen: menu on the left, content on the right
-      return Row(
-        children: [
-          SizedBox(
-            width: menuWidth,
-            child: menu,
-          ),
-          Container(width: 0.5, color: Colors.black),
-          Expanded(child: content),
-        ],
-      );
-    } else {
-      // narrow screen: show content, menu inside drawer
-      return Scaffold(
-        body: content,
-        drawer: SizedBox(
-          width: menuWidth,
-          child: Drawer(
-            child: menu,
-          ),
-        ),
-      );
-    }
-  }
-
-}
-  */

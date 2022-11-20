@@ -21,3 +21,9 @@ samples, guidance on mobile development, and a full API reference.
 
 Layouts:
 - https://www.freecodecamp.org/news/how-to-implement-any-ui-in-flutter/
+
+
+
+5.75.161.208
+
+- https://www.reddit.com/r/FlutterDev/comments/n14wvf/sync_solution_for_local_sqlite_to_remote_mysql/

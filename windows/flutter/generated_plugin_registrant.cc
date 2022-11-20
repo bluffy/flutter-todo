@@ -6,9 +6,9 @@
 
 #include "generated_plugin_registrant.h"
 
-#include <cbl_flutter_ce/cbl_flutter_ce.h>
+#include <sqlite3_flutter_libs/sqlite3_flutter_libs_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
-  CblFlutterCeRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("CblFlutterCe"));
+  Sqlite3FlutterLibsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("Sqlite3FlutterLibsPlugin"));
 }
