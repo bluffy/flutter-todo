@@ -75,7 +75,7 @@ class DBHelper {
   }
 
   // Define a function that inserts dogs into the database
-  static Future<void> insertTask(Task task) async {
+  static Future<String> insertTask(Task task) async {
     // Get a reference to the database.
 
     // Insert the Dog into the correct table. You might also specify the
@@ -88,6 +88,7 @@ class DBHelper {
       task.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    return task.id!;
   }
 
   // Define a function that inserts dogs into the database

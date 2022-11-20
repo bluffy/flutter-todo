@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../db/db_helper.dart';
 
@@ -77,17 +78,49 @@ class Task {
   }
 }
 
+enum TaskAction {
+  none,
+  add,
+  save,
+}
+
+class TaskNotifier extends StateNotifier<List<Task>> {
+  TaskNotifier(this.ref) : super([]);
+  final Ref ref;
+
+  Future<String> addTask() {
+    var fido = Task(
+      title: 'Fido',
+    );
+
+    var id = DBHelper.insertTask(fido);
+    getList();
+    ref.read(taskActionProvider.notifier).state = TaskAction.none;
+
+    return id;
+  }
+
+  getList() async {
+    List<Map<String, dynamic>> tasks = await DBHelper.taskList();
+
+    state = tasks.map((data) => Task.fromJson(data)).toList();
+  }
+}
+
+final taskActionProvider = StateProvider((ref) => TaskAction.none);
+
+final taskskProvider = StateNotifierProvider<TaskNotifier, List<Task>>((ref) {
+  return TaskNotifier(ref);
+});
+
+
+
+/*
 class TaskRepository {
   void addTask() {
     var fido = Task(
       title: 'Fido',
     );
-
-/*
-    Future<Weather> fetchWeather(String cityName) async {
-      // Get weather
-    }
-*/
     DBHelper.insertTask(fido);
     getList();
   }
@@ -105,6 +138,7 @@ final taskskProvider = FutureProvider.family((ref, arg) {
   final repo = ref.watch(TaskRepository.provider);
   return repo.getList();
 });
+*/
 
 /*
 class TasksNotifier extends StateNotifier<List<Task>> {
@@ -129,3 +163,28 @@ final taskskProvider = StateNotifierProvider<TasksNotifier, List<Task>>((ref) {
   return TasksNotifier();
 });
 */
+
+
+  // Let's allow the UI to add todos.
+  /*
+  void addTodo(Todo todo) {
+    todos.add(todo);
+    notifyListeners();
+  }
+
+  // Let's allow removing todos
+  void removeTodo(String todoId) {
+    todos.remove(todos.firstWhere((element) => element.id == todoId));
+    notifyListeners();
+  }
+
+  // Let's mark a todo as completed
+  void toggle(String todoId) {
+    for (final todo in todos) {
+      if (todo.id == todoId) {
+        todo.completed = !todo.completed;
+        notifyListeners();
+      }
+    }
+  }
+  */

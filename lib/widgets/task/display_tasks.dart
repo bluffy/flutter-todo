@@ -20,7 +20,9 @@ class DispayTasks extends ConsumerWidget {
     //var taskcontroller = context.watch<TaskController>();
     //TasksNotifier().getList();
 
-    AsyncValue<List<Task>> tasks = ref.watch(taskskProvider(""));
+    // AsyncValue<List<Task>> tasks = ref.watch(taskskProvider(""));
+    ref.read(taskskProvider.notifier).getList();
+    List<Task> tasks = ref.watch(taskskProvider);
 
     double height(candidateData) {
       if (candidateData.isNotEmpty) {
@@ -35,6 +37,7 @@ class DispayTasks extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          /*
           tasks.when(
               data: (list) {
                 return Text(list.length.toString());
@@ -42,7 +45,7 @@ class DispayTasks extends ConsumerWidget {
               error: (err, stack) => Text('Error: $err'),
               loading: () => const CircularProgressIndicator())
 
-          /*
+         */
 
           ListView.builder(
               itemCount: tasks.length,
@@ -81,7 +84,6 @@ class DispayTasks extends ConsumerWidget {
                   ],
                 );
               })
-              */
         ],
       ),
     );

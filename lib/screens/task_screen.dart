@@ -6,14 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/task/display_tasks.dart';
 import '../models/task_model.dart';
 
-enum TaskAction {
-  none,
-  add,
-  save,
-}
-
-final taskActionProvider = StateProvider((ref) => TaskAction.none);
-
 class TaskPage extends StatelessWidget {
   static const breakpoint = 600.0;
   static const menuWidth = 240.0;
@@ -60,7 +52,7 @@ class TasksView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final action = ref.watch(taskActionProvider);
 
-    final repo = ref.watch(TaskRepository.provider);
+    //final repo = ref.watch(TaskRepository.provider);
 
     return Scaffold(
         key: _scaffoldKey,
@@ -101,7 +93,14 @@ class TasksView extends ConsumerWidget {
                     icon: const Icon(Icons.add),
                     tooltip: "Neue Aufgabe",
                     onPressed: () {
-                      repo.addTask();
+                      var id = ref
+                          .read(taskskProvider.notifier)
+                          .addTask()
+                          .then((value) {
+                        print(value);
+                      });
+
+                      //repo.addTask();
                       //  TasksNotifier().addTask();
                       /*
                       var fido = Task(
