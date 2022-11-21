@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/task_model.dart';
 import './task_formular.dart';
+import '../../utils/date.dart';
 
 /*
 final tasksProvider = FutureProvider<List<Task>>((ref) async {
@@ -16,17 +17,17 @@ class DispayTasks extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint("build DispayTasks");
     //var taskmodel = context.watch<TaskModel>();
     //var taskcontroller = context.watch<TaskController>();
     //TasksNotifier().getList();
 
     // AsyncValue<List<Task>> tasks = ref.watch(taskskProvider(""));
-    ref.read(taskskProvider.notifier).getList();
-    final taskNotifier = ref.read(taskskProvider.notifier);
+    final taskNotifier = ref.watch(taskskProvider.notifier);
 
     List<Task> tasks = ref.watch(taskskProvider);
     TaskAction action = ref.watch(taskActionProvider);
-    var selectId = ref.read(taskSelectProvider);
+    var selectId = ref.watch(taskSelectProvider);
 
     double height(candidateData) {
       if (candidateData.isNotEmpty) {
@@ -112,18 +113,18 @@ class DispayTasks extends ConsumerWidget {
                                     ? Theme.of(context).focusColor
                                     : null,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(tasks[idxTask].title),
-                                ))),
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(tasks[idxTask].title +
+                                        " " +
+                                        DateTool.fromISO(
+                                            tasks[idxTask].dateUpdated))))),
                       ),
                     ]),
                   ),
-                  /*
                   Visibility(
                       visible: selectId == tasks[idxTask].id &&
                           action == TaskAction.add,
                       child: TaskFormular())
-                      */
                 ],
               );
             })

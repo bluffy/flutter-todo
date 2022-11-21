@@ -14,6 +14,8 @@ class TaskPage extends StatelessWidget {
   //final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
+    debugPrint("build TaskPage");
+
     final screenWidth = MediaQuery.of(context).size.width;
     //taskcontroller.addListener(() => print("listen controller"));
     //taskmodel.addListener(() => print("listen taskmodel"));
@@ -49,7 +51,10 @@ class TasksView extends ConsumerWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint("build Taskview");
     final action = ref.watch(taskActionProvider);
+
+    ref.read(taskskProvider.notifier).getList();
 
     final taskNotifier = ref.read(taskskProvider.notifier);
     //final repo = ref.watch(TaskRepository.provider);

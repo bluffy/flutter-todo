@@ -3,54 +3,47 @@ import '../db/db_helper.dart';
 
 class Task {
   String? id;
-  String title;
-  String? syncID;
-  String? description;
-  int? sort;
-  int? isDone;
-  String? date;
-  String? time;
-  int? dateTime;
+  String? dateCreated;
+  String? dateUpdated;
   int? status;
+  String title;
+  String? description;
+  String? date;
+
+  int? sort;
 
   Task(
       {this.id,
       required this.title,
       this.sort,
-      this.syncID,
-      this.description,
-      this.isDone,
       this.date,
-      this.time,
-      this.dateTime,
-      this.status});
+      this.status,
+      this.description,
+      this.dateCreated,
+      this.dateUpdated});
 
   static Task fromJson(Map<String, dynamic> json) {
     return Task(
         id: json['id'],
         sort: json['sort'],
-        syncID: json['sync_id'],
         title: json['title'],
         description: json['description'],
-        isDone: json['isDone'],
         date: json['date'],
-        time: json['time'],
-        dateTime: json['date_time'],
+        dateCreated: json['date_created'],
+        dateUpdated: json['date_updated'],
         status: json['status']);
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'title': title,
-      'sort': sort,
       'description': description,
-      'is_done': isDone,
       'date': date,
-      'time': time,
-      'date_time': dateTime,
+      'id': id,
       'status': status,
-      'sync_id': syncID,
+      'sort': sort,
+      'date_created': dateCreated,
+      'date_updated': dateUpdated,
+      'title': title,
     };
   }
 
@@ -70,12 +63,16 @@ class TaskNotifier extends StateNotifier<List<Task>> {
   TaskNotifier(this.ref) : super([]);
   final Ref ref;
 
-  Future<String> addTask(title, description) {
+  Future<String> addTask(title, description) async {
+    final selectedTask = await getSelectedTask();
+
     final task = Task(title: title, description: description);
 
-    var id = DBHelper.insertTask(task);
-    getList();
+    var id = await DBHelper.insertTask(task,
+        sort: (selectedTask != null) ? selectedTask.sort : null);
     ref.read(taskActionProvider.notifier).state = TaskAction.none;
+
+    getList();
 
     return id;
   }
@@ -84,18 +81,26 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     return ref.read(taskSelectProvider.notifier).state;
   }
 
-  updateTask(title, description) async {
-    final task = await getSelectedTask();
-    task!.title = title;
-    task.description = description;
-    await DBHelper.updateTask(task);
-    closeFormular();
-    getList();
+  Future<String?> updateTask(title, description) async {
+    try {
+      final task = await getSelectedTask();
+      task!.title = title;
+      task.description = description;
+
+      await DBHelper.updateTask(task);
+      getList();
+      return null;
+    } catch (e) {
+      return "Aufgabe konnte nicht gespeichert werden!";
+    }
   }
 
   Future<Task?> getSelectedTask() async {
-    final data = await DBHelper.getTaskByID(getSelectedID());
-    return Task.fromJson(data);
+    if (getSelectedID() != "") {
+      final data = await DBHelper.getTaskByID(getSelectedID());
+      return Task.fromJson(data);
+    }
+    return null;
   }
 
   getList() async {

@@ -43,6 +43,7 @@ class TaskFormular extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint("build Taskformular");
     final taskNotifier = ref.watch(taskskProvider.notifier);
     final action = ref.watch(taskActionProvider.notifier).state;
 
@@ -157,7 +158,11 @@ class TaskFormular extends ConsumerWidget {
     }
 
     if (action == TaskAction.save) {
-      await taskNotifier.updateTask(title, description);
+      final error = await taskNotifier.updateTask(title, description);
+      if (error != null) {
+        CustomDialog.showAlertDialog(context: context, text: error);
+        return;
+      }
       taskNotifier.closeFormular();
     }
     return;
