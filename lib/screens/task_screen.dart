@@ -51,20 +51,22 @@ class TasksView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final action = ref.watch(taskActionProvider);
 
+    final taskNotifier = ref.read(taskskProvider.notifier);
     //final repo = ref.watch(TaskRepository.provider);
 
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
             flexibleSpace: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                taskNotifier.unSelectTask();
+              },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                print("Notes");
-                // taskcontroller.unSelectTask();
+                taskNotifier.unSelectTask();
               },
             ),
             actions: <Widget>[
@@ -95,19 +97,12 @@ class TasksView extends ConsumerWidget {
                     icon: const Icon(Icons.add),
                     tooltip: "Neue Aufgabe",
                     onPressed: () {
-                      ref.read(taskskProvider.notifier).addTask().then((value) {
+                      ref.read(taskActionProvider.notifier).state =
+                          TaskAction.add;
+                      /*
+                      taskNotifier.addTask().then((value) {
                         debugPrint(value);
                       });
-
-                      //repo.addTask();
-                      //  TasksNotifier().addTask();
-                      /*
-                      var fido = Task(
-                        title: 'Fido',
-                      );
-                      //unSelectTask();
-
-                      DBHelper.insertTask(fido);
                       */
                     },
                   ),
@@ -117,8 +112,7 @@ class TasksView extends ConsumerWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
-              print("Safe");
-              // taskcontroller.unSelectTask();
+              taskNotifier.unSelectTask();
             },
             child: Container(
                 color: (0 != 0) ? Theme.of(context).disabledColor : null,
@@ -147,31 +141,32 @@ class TasksView extends ConsumerWidget {
   }
 }
 
-class TaskMenuView extends StatelessWidget {
+class TaskMenuView extends ConsumerWidget {
   const TaskMenuView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final taskNotifier = ref.read(taskskProvider.notifier);
+
     return Scaffold(
         appBar: AppBar(
             flexibleSpace: GestureDetector(
               onTap: () {
-                //unSelectTask();
-                // taskcontroller.unSelectTask();
+                taskNotifier.unSelectTask();
               },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                // taskcontroller.unSelectTask();
+                taskNotifier.unSelectTask();
               },
             )),
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
               debugPrint("unselect");
-              //taskcontroller.unSelectTask();
+              taskNotifier.unSelectTask();
             },
             child: Container(
               color: (0 != 0) ? Theme.of(context).disabledColor : null,

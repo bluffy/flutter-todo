@@ -79,4 +79,18 @@ class DBHelper {
   static Future<List<Map<String, Object?>>> taskList() async {
     return await _db!.query('tasks', orderBy: "sort desc");
   }
+
+  static Future<Map<String, Object?>> getTaskByID(String id) async {
+    var result = await _db!.query('tasks', where: 'id = $id');
+    return result.first;
+  }
+
+  static Future<String> updateTask(Task task) async {
+    await _db!.update(
+      'tasks',
+      task.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return task.id!;
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/task_model.dart';
+import './task_formular.dart';
 
 /*
 final tasksProvider = FutureProvider<List<Task>>((ref) async {
@@ -21,9 +22,11 @@ class DispayTasks extends ConsumerWidget {
 
     // AsyncValue<List<Task>> tasks = ref.watch(taskskProvider(""));
     ref.read(taskskProvider.notifier).getList();
+    final taskNotifier = ref.read(taskskProvider.notifier);
+
     List<Task> tasks = ref.watch(taskskProvider);
     TaskAction action = ref.watch(taskActionProvider);
-    var selectId = ref.watch(taskSelectProvider);
+    var selectId = ref.read(taskSelectProvider);
 
     double height(candidateData) {
       if (candidateData.isNotEmpty) {
@@ -45,7 +48,9 @@ class DispayTasks extends ConsumerWidget {
               loading: () => const CircularProgressIndicator())
 
          */
-
+        Visibility(
+            visible: action == TaskAction.add && selectId == "",
+            child: TaskFormular()),
         ListView.builder(
             itemCount: tasks.length,
             physics: const ClampingScrollPhysics(),
@@ -53,6 +58,10 @@ class DispayTasks extends ConsumerWidget {
             itemBuilder: (BuildContext context, int idxTask) {
               return Column(
                 children: [
+                  Visibility(
+                      visible: selectId == tasks[idxTask].id &&
+                          action == TaskAction.save,
+                      child: TaskFormular()),
                   DragTarget(
                     onMove: (details) {
                       debugPrint("move");
@@ -85,19 +94,15 @@ class DispayTasks extends ConsumerWidget {
                                 ? () {
                                     if (action == TaskAction.none) {
                                       if (selectId == tasks[idxTask].id) {
-                                        /*
-                                            taskmodel.openFormular(
-                                                TaskActionStatus.save);
-                                                */
+                                        taskNotifier
+                                            .openFormular(TaskAction.save);
                                       } else {
+                                        /*
                                         ref
                                             .read(taskSelectProvider.notifier)
-                                            .state = tasks[idxTask].id!;
-                                        /*
-                                            taskcontroller.setSelectedID(
-                                                taskID: tasks[taskIdx].id,
-                                                folderIdx: folderIdx);
-                                                */
+                                            .state = tasks[idxTask].id!;*/
+                                        taskNotifier
+                                            .selectTask(tasks[idxTask].id!);
                                       }
                                     }
                                   }
@@ -113,6 +118,12 @@ class DispayTasks extends ConsumerWidget {
                       ),
                     ]),
                   ),
+                  /*
+                  Visibility(
+                      visible: selectId == tasks[idxTask].id &&
+                          action == TaskAction.add,
+                      child: TaskFormular())
+                      */
                 ],
               );
             })

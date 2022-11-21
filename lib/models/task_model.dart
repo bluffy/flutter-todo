@@ -70,22 +70,58 @@ class TaskNotifier extends StateNotifier<List<Task>> {
   TaskNotifier(this.ref) : super([]);
   final Ref ref;
 
-  Future<String> addTask() {
-    var fido = Task(
-      title: 'Fido',
-    );
+  Future<String> addTask(title, description) {
+    final task = Task(title: title, description: description);
 
-    var id = DBHelper.insertTask(fido);
+    var id = DBHelper.insertTask(task);
     getList();
     ref.read(taskActionProvider.notifier).state = TaskAction.none;
 
     return id;
   }
 
+  getSelectedID() {
+    return ref.read(taskSelectProvider.notifier).state;
+  }
+
+  updateTask(title, description) async {
+    final task = await getSelectedTask();
+    task!.title = title;
+    task.description = description;
+    await DBHelper.updateTask(task);
+    closeFormular();
+    getList();
+  }
+
+  Future<Task?> getSelectedTask() async {
+    final data = await DBHelper.getTaskByID(getSelectedID());
+    return Task.fromJson(data);
+  }
+
   getList() async {
     List<Map<String, dynamic>> tasks = await DBHelper.taskList();
 
     state = tasks.map((data) => Task.fromJson(data)).toList();
+  }
+
+  selectTask(String taskID) {
+    ref.read(taskSelectProvider.notifier).state = taskID;
+  }
+
+  unSelectTask() {
+    if (ref.read(taskActionProvider.notifier).state == TaskAction.none) {
+      ref.read(taskSelectProvider.notifier).state = "";
+    }
+  }
+
+  openFormular(TaskAction act) {
+    if (act != TaskAction.none) {
+      ref.read(taskActionProvider.notifier).state = act;
+    }
+  }
+
+  closeFormular() {
+    ref.read(taskActionProvider.notifier).state = TaskAction.none;
   }
 }
 
