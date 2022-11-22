@@ -151,19 +151,31 @@ class TaskFormular extends ConsumerWidget {
     final String description = descController.text;
 
     if (action == TaskAction.add) {
-      await taskNotifier.addTask(title, description);
-      taskNotifier.closeFormular();
+      try {
+        await taskNotifier.addTask(title, description);
+        taskNotifier.closeFormular();
+      } catch (e, stacktrace) {
+        debugPrint(e.toString());
+        debugPrintStack(stackTrace: stacktrace);
+        CustomDialog.showAlertDialog(
+            context: context, text: "Konnte nicht angelgt werden");
+      }
 
       return;
     }
 
     if (action == TaskAction.save) {
-      final error = await taskNotifier.updateTask(title, description);
-      if (error != null) {
-        CustomDialog.showAlertDialog(context: context, text: error);
+      try {
+        await taskNotifier.updateTask(title, description);
+        taskNotifier.closeFormular();
+      } catch (e, stacktrace) {
+        debugPrint(e.toString());
+        debugPrintStack(stackTrace: stacktrace);
+
+        CustomDialog.showAlertDialog(
+            context: context, text: "Fehler beim Speichern");
         return;
       }
-      taskNotifier.closeFormular();
     }
     return;
   }

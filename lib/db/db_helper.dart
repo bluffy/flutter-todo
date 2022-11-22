@@ -9,6 +9,7 @@ class DBHelper {
   static Database? _db;
   static const int version = 1;
   static const String _databaseName = "todo-2.sqlite";
+  static const isLocalOnly = true;
 
   static String formatISOTime({DateTime? iDate}) {
     DateTime date;
@@ -86,6 +87,7 @@ class DBHelper {
                 , date           VARCHAR(25)    DEFAULT NULL
                 , date_created   VARCHAR(25)    DEFAULT NULL
                 , date_updated   VARCHAR(25)    DEFAULT NULL
+                , deleted   INTEGER        DEFAULT NULL
                 , sync_updated   INTEGER        DEFAULT NULL
                 , sync_sort_update   INTEGER        DEFAULT NULL
                 , status         INTEGER        DEFAULT NULL
@@ -131,9 +133,52 @@ class DBHelper {
     return task.id!;
   }
 
+  static Future<void> removeTask(String id) async {
+    await _db!.delete("tasks", where: "sync_id IS NULL AND id = $id");
+    await _db!.rawUpdate("""
+          update tasks set deleted = 1 where sync_id IS NOT NULL AND id = $id
+      """);
+  }
+
+  static Future<void> doListSorting(
+      String? targetID, String sourceID, bool last) async {
+    var maxsort = 0;
+
+    if (last) {
+      await _db!.rawUpdate("""
+            update tasks set sort = max(sort) + 2, sync_sort_update = 1 where id = $sourceID
+        """);
+      return;
+    }
+
+    var tasks = await _db!.query('tasks',
+        where: "deleted is null",
+        orderBy: "sort, date_created desc",
+        limit: 1000);
+
+    for (var task in tasks) {
+      // task["sync_sort_update"] = 1;
+      if (task["id"] != sourceID) {
+        if (task["id"] == targetID) {
+          maxsort = maxsort + 2;
+          await _db!.rawUpdate("""
+                update tasks set sort = $maxsort, sync_sort_update = 1 where id = $sourceID
+            """);
+        }
+
+        maxsort = maxsort + 2;
+        await _db!.rawUpdate("""
+            update tasks set sort = $maxsort, sync_sort_update = 1 where id = ${task["id"]}
+        """);
+      }
+    }
+  }
+
   static Future<List<Map<String, Object?>>> taskList() async {
-    return await _db!
-        .query('tasks', orderBy: "sort,date_created desc", limit: 1000);
+    return await _db!.query('tasks',
+        where: "deleted is null",
+        orderBy: "sort,date_created desc",
+        limit: 1000);
   }
 
   static Future<Map<String, Object?>> getTaskByID(String id) async {
@@ -158,8 +203,10 @@ class DBHelper {
 
   static Future<void> sortList() async {
     var maxsort = 0;
-    var tasks = await _db!
-        .query('tasks', orderBy: "sort, date_created desc", limit: 1000);
+    var tasks = await _db!.query('tasks',
+        where: "deleted is null",
+        orderBy: "sort, date_created desc",
+        limit: 1000);
 
     for (var task in tasks) {
       maxsort = maxsort + 2;

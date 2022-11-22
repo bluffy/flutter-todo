@@ -76,7 +76,7 @@ class TasksView extends ConsumerWidget {
             ),
             actions: <Widget>[
               Visibility(
-                visible: (action != TaskAction.none),
+                visible: (action != TaskAction.add),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: IconButton(
@@ -87,8 +87,8 @@ class TasksView extends ConsumerWidget {
                           context: context,
                           text: "Wirklich löschen?",
                           onPressedOk: () {
-                            DBHelper.nextID();
-                            Navigator.of(context).pop();
+                            taskNotifier.removeTask().whenComplete(
+                                () => Navigator.of(context).pop());
                           });
                     },
                   ),
@@ -120,7 +120,9 @@ class TasksView extends ConsumerWidget {
               taskNotifier.unSelectTask();
             },
             child: Container(
-                color: (0 != 0) ? Theme.of(context).disabledColor : null,
+                color: (action != TaskAction.none)
+                    ? Theme.of(context).disabledColor
+                    : null,
                 width: double.infinity,
                 height: double.infinity,
 
@@ -152,6 +154,7 @@ class TaskMenuView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskNotifier = ref.read(taskskProvider.notifier);
+    final action = ref.watch(taskActionProvider);
 
     return Scaffold(
         appBar: AppBar(
@@ -174,7 +177,9 @@ class TaskMenuView extends ConsumerWidget {
               taskNotifier.unSelectTask();
             },
             child: Container(
-              color: (0 != 0) ? Theme.of(context).disabledColor : null,
+              color: (action != TaskAction.none)
+                  ? Theme.of(context).disabledColor
+                  : null,
               width: double.infinity,
               height: double.infinity,
               child: const Text(""),

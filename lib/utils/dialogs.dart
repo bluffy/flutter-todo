@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 class CustomDialog {
@@ -6,6 +8,7 @@ class CustomDialog {
       required String text,
       String? titel,
       String? okText,
+      Bool? errorDetail,
       onPressed}) {
     var lokText = "OK";
     if (okText != null) {
@@ -31,7 +34,13 @@ class CustomDialog {
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: (titel != null) ? Text(titel) : null,
-      content: Text(text),
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            Text(text),
+          ],
+        ),
+      ),
       actions: [
         okButton,
       ],

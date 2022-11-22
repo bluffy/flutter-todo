@@ -74,6 +74,7 @@ class TaskNotifier extends StateNotifier<List<Task>> {
 
     getList();
 
+    ref.read(taskSelectProvider.notifier).state = id;
     return id;
   }
 
@@ -81,18 +82,37 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     return ref.read(taskSelectProvider.notifier).state;
   }
 
-  Future<String?> updateTask(title, description) async {
-    try {
-      final task = await getSelectedTask();
-      task!.title = title;
-      task.description = description;
+  Future<void> updateTask(title, description) async {
+    final task = await getSelectedTask();
+    task!.title = title;
+    task.description = description;
 
-      await DBHelper.updateTask(task);
-      getList();
-      return null;
-    } catch (e) {
-      return "Aufgabe konnte nicht gespeichert werden!";
+    await DBHelper.updateTask(task);
+    getList();
+  }
+
+  Future<void> removeTask() async {
+    final selectedID = getSelectedID();
+    final list = state;
+
+    if (selectedID == "") {
+      return;
     }
+
+    int idx = list.indexWhere((Task task) => task.id == selectedID);
+
+    var newid = "";
+
+    if (idx != -1 && idx != list.length - 1) {
+      newid = list[idx + 1].id!;
+    }
+
+    await DBHelper.removeTask(selectedID);
+
+    ref.read(taskSelectProvider.notifier).state = newid;
+    closeFormular();
+
+    getList();
   }
 
   Future<Task?> getSelectedTask() async {
@@ -107,6 +127,25 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     List<Map<String, dynamic>> tasks = await DBHelper.taskList();
 
     state = tasks.map((data) => Task.fromJson(data)).toList();
+  }
+
+  doListSorting(
+      {String? targetID, required String sourceID, bool? last}) async {
+    if (last != null && last) {
+      await DBHelper.doListSorting(null, sourceID, last);
+      getList();
+      return;
+    }
+
+    if (targetID == null) {
+      return;
+    }
+
+    if (targetID == sourceID) {
+      return;
+    }
+    await DBHelper.doListSorting(targetID, sourceID, false);
+    getList();
   }
 
   selectTask(String taskID) {

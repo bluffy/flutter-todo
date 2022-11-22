@@ -33,7 +33,7 @@ class DispayTasks extends ConsumerWidget {
       if (candidateData.isNotEmpty) {
         return 40.0;
       }
-      return 1;
+      return 20;
     }
 
     // final taskfolders = taskmodel.taskfolders;
@@ -64,62 +64,85 @@ class DispayTasks extends ConsumerWidget {
                           action == TaskAction.save,
                       child: TaskFormular()),
                   DragTarget(
-                    onMove: (details) {
-                      debugPrint("move");
-                    },
-                    onAcceptWithDetails: (details) {},
                     builder: (context, candidateData, rejectedData) {
                       return Container(
                         color: (candidateData.isNotEmpty) ? Colors.grey : null,
                         height: height(candidateData),
                       );
                     },
-                    onAccept: (data) {},
+                    onAccept: (String data) {
+                      taskNotifier.doListSorting(
+                          targetID: tasks[idxTask].id, sourceID: data);
+                      // taskNotifier.doListSorting( targetID, targetSort, sourceID)
+                    },
                   ),
-                  Draggable(
-                    maxSimultaneousDrags: (action == TaskAction.none &&
-                            selectId == tasks[idxTask].id)
-                        ? 1
-                        : 0,
-                    data: idxTask,
-                    feedback: Text(tasks[idxTask].title),
-                    child: Row(children: [
-                      Checkbox(
-                          value: false,
-                          onChanged: (action == TaskAction.none)
-                              ? (bool? value) {}
-                              : null),
-                      Expanded(
-                        child: GestureDetector(
-                            onTap: (action == TaskAction.none)
-                                ? () {
-                                    if (action == TaskAction.none) {
-                                      if (selectId == tasks[idxTask].id) {
-                                        taskNotifier
-                                            .openFormular(TaskAction.save);
-                                      } else {
-                                        /*
-                                        ref
-                                            .read(taskSelectProvider.notifier)
-                                            .state = tasks[idxTask].id!;*/
-                                        taskNotifier
-                                            .selectTask(tasks[idxTask].id!);
+                  Visibility(
+                    visible: (action == TaskAction.save &&
+                            selectId != tasks[idxTask].id) ||
+                        action != TaskAction.save,
+                    child: Draggable(
+                      maxSimultaneousDrags: (action == TaskAction.none &&
+                              selectId == tasks[idxTask].id)
+                          ? 1
+                          : 0,
+                      data: tasks[idxTask].id,
+                      feedback: Text(tasks[idxTask].title),
+                      child: Row(children: [
+                        Checkbox(
+                            value: false,
+                            onChanged: (action == TaskAction.none)
+                                ? (bool? value) {}
+                                : null),
+                        Expanded(
+                          child: GestureDetector(
+                              onTap: (action == TaskAction.none)
+                                  ? () {
+                                      if (action == TaskAction.none) {
+                                        if (selectId == tasks[idxTask].id) {
+                                          taskNotifier
+                                              .openFormular(TaskAction.save);
+                                        } else {
+                                          /*
+                                          ref
+                                              .read(taskSelectProvider.notifier)
+                                              .state = tasks[idxTask].id!;*/
+                                          taskNotifier
+                                              .selectTask(tasks[idxTask].id!);
+                                        }
                                       }
                                     }
-                                  }
-                                : null,
-                            child: Container(
-                                color: (selectId == tasks[idxTask].id)
-                                    ? Theme.of(context).focusColor
+                                  : null,
+                              child: Container(
+                                  color: (selectId == tasks[idxTask].id)
+                                      ? Theme.of(context).focusColor
+                                      : null,
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(tasks[idxTask].title +
+                                          " " +
+                                          DateTool.fromISO(
+                                              tasks[idxTask].dateUpdated))))),
+                        ),
+                        Visibility(
+                          visible: idxTask >= tasks.length - 1,
+                          child: DragTarget(
+                            builder: (context, candidateData, rejectedData) {
+                              return Container(
+                                color: (candidateData.isNotEmpty)
+                                    ? Colors.grey
                                     : null,
-                                child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(tasks[idxTask].title +
-                                        " " +
-                                        DateTool.fromISO(
-                                            tasks[idxTask].dateUpdated))))),
-                      ),
-                    ]),
+                                height: height(candidateData),
+                              );
+                            },
+                            onAccept: (String data) {
+                              taskNotifier.doListSorting(
+                                  sourceID: data, last: true);
+                              // taskNotifier.doListSorting( targetID, targetSort, sourceID)
+                            },
+                          ),
+                        ),
+                      ]),
+                    ),
                   ),
                   Visibility(
                       visible: selectId == tasks[idxTask].id &&
