@@ -150,6 +150,9 @@ class TaskFormular extends ConsumerWidget {
     final String description = descController.text;
 
     if (action == TaskAction.add) {
+      await taskNotifier.addTask(title, description);
+      taskNotifier.closeFormular();
+      /*
       try {
         await taskNotifier.addTask(title, description);
         taskNotifier.closeFormular();
@@ -159,6 +162,7 @@ class TaskFormular extends ConsumerWidget {
         CustomDialog.showAlertDialog(
             context: context, text: "Konnte nicht angelgt werden");
       }
+      */
 
       return;
     }

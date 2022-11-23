@@ -34,7 +34,7 @@ class DispayTasks extends ConsumerWidget {
       if (candidateData.isNotEmpty) {
         return 40.0;
       }
-      return 20;
+      return 10;
     }
 
     // final taskfolders = taskmodel.taskfolders;
@@ -71,7 +71,8 @@ class DispayTasks extends ConsumerWidget {
                         height: height(candidateData),
                       );
                     },
-                    onAccept: (String data) {
+                    onAccept: (int data) {
+                      print("TEST");
                       taskNotifier.doListSorting(
                           targetID: tasks[idxTask].key, sourceID: data);
                       // taskNotifier.doListSorting( targetID, targetSort, sourceID)
@@ -121,7 +122,7 @@ class DispayTasks extends ConsumerWidget {
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(tasks[idxTask].title +
                                           ' ' +
-                                          tasks[idxTask].key.toString())))),
+                                          tasks[idxTask].sort.toString())))),
                         ),
                         Visibility(
                           visible: idxTask >= tasks.length - 1,
@@ -134,7 +135,7 @@ class DispayTasks extends ConsumerWidget {
                                 height: height(candidateData),
                               );
                             },
-                            onAccept: (String data) {
+                            onAccept: (int data) {
                               taskNotifier.doListSorting(
                                   sourceID: data, last: true);
                               // taskNotifier.doListSorting( targetID, targetSort, sourceID)

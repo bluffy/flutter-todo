@@ -5,8 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import './models/task_model.dart';
 import './screens/task_screen.dart';
 
-const String boxNameTasks = "tasks";
-const String boxNameFolders = "folders";
+const String boxNameTasks = "t";
+const String boxNameFolders = "f";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
