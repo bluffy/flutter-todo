@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/task_model.dart';
 import './task_formular.dart';
-import '../../utils/date.dart';
+//import '../../utils/date.dart';
 
 /*
 final tasksProvider = FutureProvider<List<Task>>((ref) async {
@@ -18,6 +18,7 @@ class DispayTasks extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint("build DispayTasks");
+    //    final tasks = taskskProvider.notifier;
     //var taskmodel = context.watch<TaskModel>();
     //var taskcontroller = context.watch<TaskController>();
     //TasksNotifier().getList();
@@ -50,7 +51,7 @@ class DispayTasks extends ConsumerWidget {
 
          */
         Visibility(
-            visible: action == TaskAction.add && selectId == "",
+            visible: action == TaskAction.add && selectId == -1,
             child: TaskFormular()),
         ListView.builder(
             itemCount: tasks.length,
@@ -60,7 +61,7 @@ class DispayTasks extends ConsumerWidget {
               return Column(
                 children: [
                   Visibility(
-                      visible: selectId == tasks[idxTask].id &&
+                      visible: selectId == tasks[idxTask].key &&
                           action == TaskAction.save,
                       child: TaskFormular()),
                   DragTarget(
@@ -72,20 +73,20 @@ class DispayTasks extends ConsumerWidget {
                     },
                     onAccept: (String data) {
                       taskNotifier.doListSorting(
-                          targetID: tasks[idxTask].id, sourceID: data);
+                          targetID: tasks[idxTask].key, sourceID: data);
                       // taskNotifier.doListSorting( targetID, targetSort, sourceID)
                     },
                   ),
                   Visibility(
                     visible: (action == TaskAction.save &&
-                            selectId != tasks[idxTask].id) ||
+                            selectId != tasks[idxTask].key) ||
                         action != TaskAction.save,
                     child: Draggable(
                       maxSimultaneousDrags: (action == TaskAction.none &&
-                              selectId == tasks[idxTask].id)
+                              selectId == tasks[idxTask].key)
                           ? 1
                           : 0,
-                      data: tasks[idxTask].id,
+                      data: tasks[idxTask].key,
                       feedback: Text(tasks[idxTask].title),
                       child: Row(children: [
                         Checkbox(
@@ -98,7 +99,7 @@ class DispayTasks extends ConsumerWidget {
                               onTap: (action == TaskAction.none)
                                   ? () {
                                       if (action == TaskAction.none) {
-                                        if (selectId == tasks[idxTask].id) {
+                                        if (selectId == tasks[idxTask].key) {
                                           taskNotifier
                                               .openFormular(TaskAction.save);
                                         } else {
@@ -107,21 +108,20 @@ class DispayTasks extends ConsumerWidget {
                                               .read(taskSelectProvider.notifier)
                                               .state = tasks[idxTask].id!;*/
                                           taskNotifier
-                                              .selectTask(tasks[idxTask].id!);
+                                              .selectTask(tasks[idxTask].key!);
                                         }
                                       }
                                     }
                                   : null,
                               child: Container(
-                                  color: (selectId == tasks[idxTask].id)
+                                  color: (selectId == tasks[idxTask].key)
                                       ? Theme.of(context).focusColor
                                       : null,
                                   child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(tasks[idxTask].title +
-                                          " " +
-                                          DateTool.fromISO(
-                                              tasks[idxTask].dateUpdated))))),
+                                          ' ' +
+                                          tasks[idxTask].key.toString())))),
                         ),
                         Visibility(
                           visible: idxTask >= tasks.length - 1,
@@ -145,7 +145,7 @@ class DispayTasks extends ConsumerWidget {
                     ),
                   ),
                   Visibility(
-                      visible: selectId == tasks[idxTask].id &&
+                      visible: selectId == tasks[idxTask].key &&
                           action == TaskAction.add,
                       child: TaskFormular())
                 ],

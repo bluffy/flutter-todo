@@ -27,3 +27,6 @@ Layouts:
 5.75.161.208
 
 - https://www.reddit.com/r/FlutterDev/comments/n14wvf/sync_solution_for_local_sqlite_to_remote_mysql/
+
+
+flutter packages pub run build_runner build

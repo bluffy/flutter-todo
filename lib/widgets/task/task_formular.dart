@@ -112,7 +112,7 @@ class TaskFormular extends ConsumerWidget {
     }
 
     if (action == TaskAction.save) {
-      final task = await taskNotifier.getSelectedTask();
+      final task = taskNotifier.getSelectedTask();
       if (task == null) {
         CustomDialog.showAlertDialog(
             context: context, text: "Task nicht vorhanden!");
@@ -122,9 +122,8 @@ class TaskFormular extends ConsumerWidget {
       titleController.text = task.title;
 
       titleFocus.requestFocus();
-      if (task.description != null) {
-        descController.text = task.description!;
-      }
+
+      descController.text = task.description;
 
       return;
     }

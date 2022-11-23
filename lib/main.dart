@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_todo/screens/task_screen.dart';
+//import 'package:flutter_todo/screens/task_screen.dart.old';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import './models/task_model.dart';
+import './screens/task_screen.dart';
 
-import './db/db_helper.dart';
+const String boxNameTasks = "tasks";
+const String boxNameFolders = "folders";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DBHelper.initDatabase();
+  await Hive.initFlutter();
+  Hive.registerAdapter<Task>(TaskAdapter());
+  Hive.registerAdapter<Folder>(FolderAdapter());
+  await Hive.openBox<Task>(boxNameTasks);
+  await Hive.openBox<Folder>(boxNameFolders);
+
   runApp(const ProviderScope(
     child: MyApp(),
   ));
@@ -19,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'ToDo',
       theme: ThemeData.from(colorScheme: const ColorScheme.light()),
       darkTheme: ThemeData.from(colorScheme: const ColorScheme.dark()),
       initialRoute: '/',

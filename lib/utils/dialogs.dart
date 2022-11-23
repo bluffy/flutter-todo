@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 
 class CustomDialog {
@@ -8,7 +6,7 @@ class CustomDialog {
       required String text,
       String? titel,
       String? okText,
-      Bool? errorDetail,
+      bool? errorDetail,
       onPressed}) {
     var lokText = "OK";
     if (okText != null) {

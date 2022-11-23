@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_todo/db/db_helper.dart';
+
 import 'package:flutter_todo/models/task_model.dart';
 import '../utils/dialogs.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,7 +54,7 @@ class TasksView extends ConsumerWidget {
     debugPrint("build Taskview");
     final action = ref.watch(taskActionProvider);
 
-    ref.read(taskskProvider.notifier).getList();
+    // ref.read(taskskProvider.notifier).getList();
 
     final taskNotifier = ref.read(taskskProvider.notifier);
     //final repo = ref.watch(TaskRepository.provider);
