@@ -21,6 +21,64 @@ class TaskMenuView extends ConsumerWidget {
     }
   }
 
+/*
+   Widget dragTarget(BuildContext context, WidgetRef ref, Navi nai) {
+    double height(candidateData) {
+      if (candidateData.isNotEmpty) {
+        return 30.0;
+      }
+      return 10;
+    }
+
+    return DragTarget(
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          color: (candidateData.isNotEmpty) ? Colors.grey[200] : null,
+          height: height(candidateData),
+        );
+      },
+      onAccept: (int data) {
+
+          ref
+              .read(taskListkProvider.notifier)
+              .doListSortingFromMenu(sourceID: data);
+ 
+        // taskListState.doListSorting( targetID, targetSort, sourceID)
+      },
+    );
+    */
+
+  Widget dragTargetMenuItem(
+      BuildContext context, WidgetRef ref, bool selected, Navi navi) {
+    print("<<<<<<<<<<<<<build");
+    return DragTarget(
+        builder: (context, candidateData, rejectedData) {
+          return ListTile(
+            onTap: () {
+              _selectPage(context, ref, navi);
+            },
+            selected: selected,
+            leading: const Icon(Icons.inbox),
+            title: const Text('inbox'),
+          );
+        },
+        onWillAccept: (data) => false,
+        onAccept: (int data) {
+          print("test");
+          /*
+      ref
+          .read(taskListkProvider.notifier)
+          .doListSortingFromMenu(sourceID: data);
+          */
+          /*
+      ref
+          .read(taskListkProvider.notifier)
+          .doListSortingFromMenu(sourceID: data);
+*/
+          // taskListState.doListSorting( targetID, targetSort, sourceID)
+        });
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -52,6 +110,9 @@ class TaskMenuView extends ConsumerWidget {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: <Widget>[
+                  dragTargetMenuItem(context, ref,
+                      ref.watch(naviSelectProvider) == Navi.inbox, Navi.inbox),
+                  /*
                   ListTile(
                     onTap: () {
                       _selectPage(context, ref, Navi.inbox);
@@ -59,7 +120,7 @@ class TaskMenuView extends ConsumerWidget {
                     selected: (ref.watch(naviSelectProvider) == Navi.inbox),
                     leading: const Icon(Icons.inbox),
                     title: const Text('inbox'),
-                  ),
+                  ),*/
                   ListTile(
                     onTap: () {
                       _selectPage(context, ref, Navi.today);
