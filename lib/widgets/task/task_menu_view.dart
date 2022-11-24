@@ -23,32 +23,28 @@ class TaskMenuView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final taskListState = ref.read(taskListkProvider.notifier);
-    final action = ref.watch(taskActionProvider);
-    final navi = ref.watch(naviSelectProvider);
-
     return Scaffold(
         appBar: AppBar(
             flexibleSpace: GestureDetector(
               onTap: () {
-                taskListState.unSelectTask();
+                ProviderAction.unSelectTask(ref);
               },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                taskListState.unSelectTask();
+                ProviderAction.unSelectTask(ref);
               },
             )),
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
               debugPrint("unselect");
-              taskListState.unSelectTask();
+              ProviderAction.unSelectTask(ref);
             },
             child: Container(
-              color: (action != TaskAction.none)
+              color: (ref.watch(taskActionProvider) != TaskAction.none)
                   ? Theme.of(context).disabledColor
                   : null,
               width: double.infinity,
@@ -60,7 +56,7 @@ class TaskMenuView extends ConsumerWidget {
                     onTap: () {
                       _selectPage(context, ref, Navi.inbox);
                     },
-                    selected: (navi == Navi.inbox),
+                    selected: (ref.watch(naviSelectProvider) == Navi.inbox),
                     leading: const Icon(Icons.inbox),
                     title: const Text('inbox'),
                   ),
@@ -68,7 +64,7 @@ class TaskMenuView extends ConsumerWidget {
                     onTap: () {
                       _selectPage(context, ref, Navi.today);
                     },
-                    selected: (navi == Navi.today),
+                    selected: (ref.watch(naviSelectProvider) == Navi.today),
                     leading: const Icon(Icons.today),
                     title: const Text('Today'),
                   ),

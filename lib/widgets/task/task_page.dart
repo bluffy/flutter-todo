@@ -12,8 +12,6 @@ class TaskPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ancestorScaffold = Scaffold.maybeOf(context);
     final hasDrawer = ancestorScaffold != null && ancestorScaffold.hasDrawer;
-    final action = ref.watch(taskActionProvider);
-    final taskListState = ref.read(taskListkProvider.notifier);
 
     return Scaffold(
         key: _scaffoldKey,
@@ -28,19 +26,19 @@ class TaskPage extends ConsumerWidget {
                 : null,
             flexibleSpace: GestureDetector(
               onTap: () {
-                taskListState.unSelectTask();
+                ProviderAction.unSelectTask(ref);
               },
               child: const SizedBox(height: double.infinity, child: Text("")),
             ),
             title: GestureDetector(
               child: const Text('Notes'),
               onTap: () {
-                taskListState.unSelectTask();
+                ProviderAction.unSelectTask(ref);
               },
             ),
             actions: <Widget>[
               Visibility(
-                visible: (action != TaskAction.add),
+                visible: (ref.watch(taskActionProvider) != TaskAction.add),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: IconButton(
@@ -51,8 +49,11 @@ class TaskPage extends ConsumerWidget {
                           context: context,
                           text: "Wirklich löschen?",
                           onPressedOk: () {
-                            taskListState.removeTask().whenComplete(() {
-                              taskListState.closeFormular();
+                            ref
+                                .read(taskListkProvider.notifier)
+                                .removeTask()
+                                .whenComplete(() {
+                              ProviderAction.closeFormular(ref);
                               Navigator.of(context).pop();
                             });
                           });
@@ -61,7 +62,7 @@ class TaskPage extends ConsumerWidget {
                 ),
               ),
               Visibility(
-                visible: (action == TaskAction.none),
+                visible: (ref.watch(taskActionProvider) == TaskAction.none),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: IconButton(
@@ -78,10 +79,10 @@ class TaskPage extends ConsumerWidget {
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
-              taskListState.unSelectTask();
+              ProviderAction.unSelectTask(ref);
             },
             child: Container(
-                color: (action != TaskAction.none)
+                color: (ref.watch(taskActionProvider) != TaskAction.none)
                     ? Theme.of(context).disabledColor
                     : null,
                 width: double.infinity,

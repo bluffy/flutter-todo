@@ -10,14 +10,14 @@ class TaskFormular extends ConsumerWidget {
   final TextEditingController descController = TextEditingController();
   final FocusNode titleFocus = FocusNode();
 
-  Widget formularFooter(context, taskListState, action) {
+  Widget formularFooter(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton.icon(
               onPressed: () {
-                taskFormularsave(context, taskListState, action);
+                taskFormularsave(context, ref);
               },
               icon: const Icon(Icons.save),
               label: const Text('Speichern'),
@@ -30,7 +30,7 @@ class TaskFormular extends ConsumerWidget {
                     context: context,
                     text: "Wirklich Abreche",
                     onPressedOk: () {
-                      taskListState.closeFormular();
+                      ProviderAction.closeFormular(ref);
                       Navigator.pop(context);
                     });
               },
@@ -44,8 +44,6 @@ class TaskFormular extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint("build Taskformular");
-    final taskListState = ref.watch(taskListkProvider.notifier);
-    final action = ref.watch(taskActionProvider.notifier).state;
 
     taskFormularfill(context, ref);
 
@@ -90,7 +88,7 @@ class TaskFormular extends ConsumerWidget {
                               border: UnderlineInputBorder(),
                             ),
                           )),
-                      formularFooter(context, taskListState, action),
+                      formularFooter(context, ref),
                     ]),
               ),
             )
@@ -101,8 +99,8 @@ class TaskFormular extends ConsumerWidget {
   }
 
   void taskFormularfill(BuildContext context, WidgetRef ref) async {
-    final taskListState = ref.read(taskListkProvider.notifier);
-    final action = ref.read(taskActionProvider.notifier).state;
+    final action = ProviderAction.readAction(ref);
+    final taskNotifier = ref.read(taskListkProvider.notifier);
 
     if (action == TaskAction.add) {
       titleController.text = "";
@@ -112,11 +110,11 @@ class TaskFormular extends ConsumerWidget {
     }
 
     if (action == TaskAction.save) {
-      final task = taskListState.getSelectedTask();
+      final task = taskNotifier.getSelectedTask();
       if (task == null) {
         CustomDialog.showAlertDialog(
             context: context, text: "Task nicht vorhanden!");
-        taskListState.closeFormular();
+        ProviderAction.closeFormular(ref);
         return;
       }
       titleController.text = task.title;
@@ -129,8 +127,10 @@ class TaskFormular extends ConsumerWidget {
     }
   }
 
-  void taskFormularsave(
-      context, TaskListState taskListState, TaskAction action) async {
+  void taskFormularsave(context, WidgetRef ref) async {
+    final action = ProviderAction.readAction(ref);
+    final taskNotifier = ref.read(taskListkProvider.notifier);
+
     bool checkFields() {
       if (titleController.text.isNotEmpty) {
         //  _createTask();
@@ -150,27 +150,17 @@ class TaskFormular extends ConsumerWidget {
     final String description = descController.text;
 
     if (action == TaskAction.add) {
-      await taskListState.addTask(title, description);
-      taskListState.closeFormular();
-      /*
-      try {
-        await taskListState.addTask(title, description);
-        taskListState.closeFormular();
-      } catch (e, stacktrace) {
-        debugPrint(e.toString());
-        debugPrintStack(stackTrace: stacktrace);
-        CustomDialog.showAlertDialog(
-            context: context, text: "Konnte nicht angelgt werden");
-      }
-      */
+      await taskNotifier.addTask(title, description);
+      ProviderAction.closeFormular(ref);
 
       return;
     }
 
     if (action == TaskAction.save) {
       try {
-        await taskListState.updateTask(title, description);
-        taskListState.closeFormular();
+        await taskNotifier.updateTask(title, description);
+
+        ProviderAction.closeFormular(ref);
       } catch (e, stacktrace) {
         debugPrint(e.toString());
         debugPrintStack(stackTrace: stacktrace);

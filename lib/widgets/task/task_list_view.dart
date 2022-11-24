@@ -3,49 +3,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/task_model.dart';
 import './task_formular.dart';
 import '../../providers/task_provider.dart';
-//import '../../utils/date.dart';
-
-/*
-final tasksProvider = FutureProvider<List<Task>>((ref) async {
-  List<Map<String, dynamic>> tasks = await DBHelper.taskList();
-
-  return tasks.map((data) => Task.fromJson(data)).toList();
-});
-*/
 
 class TaskListView extends ConsumerWidget {
   const TaskListView({Key? key}) : super(key: key);
 
-  Widget listItem(
-      BuildContext context,
-      WidgetRef ref,
-      bool feedback,
-      List<Task> tasks,
-      int idxTask,
-      int selectId,
-      TaskAction action,
-      TaskListState taskListState) {
+  Widget listItem(BuildContext context, WidgetRef ref, bool feedback,
+      List<Task> tasks, int idxTask) {
     return Row(children: [
       Checkbox(
           value: false,
-          onChanged: (action == TaskAction.none) ? (bool? value) {} : null),
+          onChanged: (ProviderAction.watchAction(ref) == TaskAction.none)
+              ? (bool? value) {}
+              : null),
       Expanded(
         child: GestureDetector(
-            onTap: (!feedback && action == TaskAction.none)
+            onTap: (!feedback &&
+                    ProviderAction.watchAction(ref) == TaskAction.none)
                 ? () {
-                    if (action == TaskAction.none) {
-                      if (selectId == tasks[idxTask].key) {
-                        taskListState.openFormular(TaskAction.save);
+                    if (ProviderAction.watchAction(ref) == TaskAction.none) {
+                      if (ProviderAction.watchSeletedID(ref) ==
+                          tasks[idxTask].key) {
+                        ProviderAction.openFormular(ref, TaskAction.save);
                       } else {
-                        taskListState.selectTask(tasks[idxTask].key!);
+                        ProviderAction.selectTask(ref, tasks[idxTask].key!);
                       }
                     }
                   }
                 : null,
             child: Container(
-                color: (selectId == tasks[idxTask].key)
-                    ? Theme.of(context).focusColor
-                    : null,
+                color:
+                    (ProviderAction.watchSeletedID(ref) == tasks[idxTask].key)
+                        ? Theme.of(context).focusColor
+                        : null,
                 child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(tasks[idxTask].title)))),
@@ -53,14 +42,8 @@ class TaskListView extends ConsumerWidget {
     ]);
   }
 
-  Widget dragTarget(
-      BuildContext context,
-      WidgetRef ref,
-      bool last,
-      List<Task> tasks,
-      int idxTask,
-      int selectId,
-      TaskListState taskListState) {
+  Widget dragTarget(BuildContext context, WidgetRef ref, bool last,
+      List<Task> tasks, int idxTask) {
     double height(candidateData) {
       if (candidateData.isNotEmpty) {
         return 30.0;
@@ -77,10 +60,13 @@ class TaskListView extends ConsumerWidget {
       },
       onAccept: (int data) {
         if (last) {
-          taskListState.doListSorting(sourceID: data, last: true);
+          ref
+              .read(taskListkProvider.notifier)
+              .doListSorting(sourceID: data, last: true);
         } else {
-          taskListState.doListSorting(
-              targetID: tasks[idxTask].key, sourceID: data);
+          ref
+              .read(taskListkProvider.notifier)
+              .doListSorting(targetID: tasks[idxTask].key, sourceID: data);
         }
         // taskListState.doListSorting( targetID, targetSort, sourceID)
       },
@@ -91,18 +77,15 @@ class TaskListView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint("build DispayTasks");
 
-    final taskListState = ref.watch(taskListkProvider.notifier);
-
     List<Task> tasks = ref.watch(taskListkProvider);
-    TaskAction action = ref.watch(taskActionProvider);
-    final selectId = ref.watch(taskSelectProvider);
 
     // final taskfolders = taskmodel.taskfolders;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Visibility(
-            visible: action == TaskAction.add && selectId == -1,
+            visible: ProviderAction.watchAction(ref) == TaskAction.add &&
+                ProviderAction.watchSeletedID(ref) == -1,
             child: TaskFormular()),
         ListView.builder(
             itemCount: tasks.length,
@@ -112,21 +95,26 @@ class TaskListView extends ConsumerWidget {
               return Column(
                 children: [
                   Visibility(
-                      visible: selectId == tasks[idxTask].key &&
-                          action == TaskAction.save,
+                      visible: ProviderAction.watchSeletedID(ref) ==
+                              tasks[idxTask].key &&
+                          ProviderAction.watchAction(ref) == TaskAction.save,
                       child: TaskFormular()),
-                  dragTarget(context, ref, false, tasks, idxTask, selectId,
-                      taskListState),
+                  dragTarget(context, ref, false, tasks, idxTask),
                   Visibility(
-                    visible: (action == TaskAction.save &&
-                            selectId != tasks[idxTask].key) ||
-                        action != TaskAction.save,
+                    visible:
+                        (ProviderAction.watchAction(ref) == TaskAction.save &&
+                                ProviderAction.watchSeletedID(ref) !=
+                                    tasks[idxTask].key) ||
+                            ProviderAction.watchAction(ref) != TaskAction.save,
                     child: LayoutBuilder(
                       builder: (context, constraints) => Draggable(
-                        maxSimultaneousDrags: (action == TaskAction.none &&
-                                selectId == tasks[idxTask].key)
-                            ? 1
-                            : 0,
+                        maxSimultaneousDrags:
+                            (ProviderAction.watchAction(ref) ==
+                                        TaskAction.none &&
+                                    ProviderAction.watchSeletedID(ref) ==
+                                        tasks[idxTask].key)
+                                ? 1
+                                : 0,
                         data: tasks[idxTask].key,
                         feedback: Material(
                           color: Colors.transparent,
@@ -136,24 +124,35 @@ class TaskListView extends ConsumerWidget {
                               color: Colors.transparent,
                               width: constraints.maxWidth,
                               height: 40.0,
-                              child: listItem(context, ref, true, tasks,
-                                  idxTask, selectId, action, taskListState),
+                              child:
+                                  listItem(context, ref, true, tasks, idxTask),
                             ),
                           ),
                         ),
-                        child: listItem(context, ref, false, tasks, idxTask,
-                            selectId, action, taskListState),
+                        child: listItem(
+                          context,
+                          ref,
+                          false,
+                          tasks,
+                          idxTask,
+                        ),
                       ),
                     ),
                   ),
                   Visibility(
                     visible: tasks.last.key == tasks[idxTask].key,
-                    child: dragTarget(context, ref, true, tasks, idxTask,
-                        selectId, taskListState),
+                    child: dragTarget(
+                      context,
+                      ref,
+                      true,
+                      tasks,
+                      idxTask,
+                    ),
                   ),
                   Visibility(
-                      visible: selectId == tasks[idxTask].key &&
-                          action == TaskAction.add,
+                      visible: ProviderAction.watchSeletedID(ref) ==
+                              tasks[idxTask].key &&
+                          ProviderAction.watchAction(ref) == TaskAction.add,
                       child: TaskFormular())
                 ],
               );

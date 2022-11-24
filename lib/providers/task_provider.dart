@@ -20,11 +20,15 @@ class TaskListState extends StateNotifier<List<Task>> {
   TaskListState(this.ref) : super([]) {
     _listentry = [];
     _listEntryLoaded = false;
+    _listTodyLoaded = false;
+    _lisToday = [];
     _cacheLists(ref.read(naviSelectProvider));
   }
 
   late List<Task> _listentry;
   late bool _listEntryLoaded;
+  late List<Task> _lisToday;
+  late bool _listTodyLoaded;
   //List<Task> _listToday;
 
   final Ref ref;
@@ -38,11 +42,33 @@ class TaskListState extends StateNotifier<List<Task>> {
 
         _listEntryLoaded = true;
       }
-      _sortState(_listentry);
-
-      debugPrint("_cacheLists()");
+      state = _listentry.toList();
     } else {
-      state = [];
+      if (!_listTodyLoaded) {
+        var box = Hive.box<Task>(Constants.boxNameTasks);
+        _lisToday = box.values
+            .where((element) => element.itemLocation == ItemLocation.today)
+            .toList();
+
+        _listTodyLoaded = true;
+      }
+      state = _lisToday.toList();
+    }
+    _sortState();
+    debugPrint("_cacheLists()");
+  }
+
+  _saveCacheList() {
+    final selectedNavi = getSelectedNavi();
+    switch (selectedNavi) {
+      case Navi.inbox:
+        _listentry = state.toList();
+        break;
+      case Navi.today:
+        _lisToday = state.toList();
+        break;
+      default:
+        break;
     }
   }
 
@@ -50,7 +76,7 @@ class TaskListState extends StateNotifier<List<Task>> {
     return tasks.indexWhere((Task task) => task.key == key);
   }
 
-  _reSort(List<Task> list) {
+  _setSortInTaskItems(List<Task> list) {
     //var tasks = list.toList();
     var cnt = 0;
     for (var task in list.reversed.toList()) {
@@ -63,6 +89,12 @@ class TaskListState extends StateNotifier<List<Task>> {
     }
   }
 
+  _sortList(List<Task> tasks) {
+    if (tasks.length > 1) {
+      tasks.sort((a, b) => -a.sort.compareTo(b.sort));
+    }
+  }
+
   _sortState([List<Task>? ptasks]) {
     List<Task> tasks;
     if (ptasks != null) {
@@ -72,9 +104,7 @@ class TaskListState extends StateNotifier<List<Task>> {
     }
 
     if (tasks.isNotEmpty) {
-      if (tasks.length > 1) {
-        tasks.sort((a, b) => -a.sort.compareTo(b.sort));
-      }
+      _sortList(tasks);
 
       state = tasks;
       return;
@@ -97,8 +127,22 @@ class TaskListState extends StateNotifier<List<Task>> {
   Future<int> addTask(title, description) async {
     final selectedId = getSelectedID();
     final tasks = state.toList();
+    final selectedNavi = getSelectedNavi();
+    //late ItemLocation location;
 
     final task = Task(title: title, description: description);
+
+    switch (selectedNavi) {
+      case Navi.inbox:
+        task.itemLocation = ItemLocation.inbox;
+        break;
+      case Navi.today:
+        task.itemLocation = ItemLocation.today;
+        break;
+      default:
+        task.itemLocation = ItemLocation.inbox;
+    }
+
     task.synUpdate = true;
 
     final id = await Hive.box<Task>(Constants.boxNameTasks).add(task);
@@ -109,8 +153,10 @@ class TaskListState extends StateNotifier<List<Task>> {
       final idx = _getTaskIndex(tasks, selectedId);
       tasks.insert(idx + 1, task);
     }
-    _reSort(tasks);
+    _setSortInTaskItems(tasks);
     _sortState(tasks);
+
+    _saveCacheList();
 
     ref.read(taskActionProvider.notifier).state = TaskAction.none;
     ref.read(taskSelectProvider.notifier).state = id;
@@ -119,6 +165,10 @@ class TaskListState extends StateNotifier<List<Task>> {
 
   int getSelectedID() {
     return ref.read(taskSelectProvider.notifier).state;
+  }
+
+  Navi getSelectedNavi() {
+    return ref.read(naviSelectProvider.notifier).state;
   }
 
   Future<void> updateTask(String title, String description) async {
@@ -184,30 +234,10 @@ class TaskListState extends StateNotifier<List<Task>> {
       tasks.insert(idxTarget, sourceTask);
     }
 
-    _reSort(tasks);
+    _setSortInTaskItems(tasks);
     _sortState(tasks);
 
     state = tasks.toList();
-  }
-
-  selectTask(int taskID) {
-    ref.read(taskSelectProvider.notifier).state = taskID;
-  }
-
-  unSelectTask() {
-    if (ref.read(taskActionProvider.notifier).state == TaskAction.none) {
-      ref.read(taskSelectProvider.notifier).state = -1;
-    }
-  }
-
-  openFormular(TaskAction act) {
-    if (act != TaskAction.none) {
-      ref.read(taskActionProvider.notifier).state = act;
-    }
-  }
-
-  closeFormular() {
-    ref.read(taskActionProvider.notifier).state = TaskAction.none;
   }
 }
 
@@ -219,3 +249,37 @@ final taskListkProvider =
     StateNotifierProvider<TaskListState, List<Task>>((ref) {
   return TaskListState(ref);
 });
+
+class ProviderAction {
+  static openFormular(WidgetRef ref, TaskAction act) {
+    if (act != TaskAction.none) {
+      ref.read(taskActionProvider.notifier).state = act;
+    }
+  }
+
+  static TaskAction watchAction(WidgetRef ref) {
+    return ref.watch(taskActionProvider);
+  }
+
+  static TaskAction readAction(WidgetRef ref) {
+    return ref.read(taskActionProvider);
+  }
+
+  static int watchSeletedID(WidgetRef ref) {
+    return ref.watch(taskSelectProvider);
+  }
+
+  static closeFormular(WidgetRef ref) {
+    ref.read(taskActionProvider.notifier).state = TaskAction.none;
+  }
+
+  static unSelectTask(WidgetRef ref) {
+    if (ref.read(taskActionProvider.notifier).state == TaskAction.none) {
+      ref.read(taskSelectProvider.notifier).state = -1;
+    }
+  }
+
+  static selectTask(WidgetRef ref, int key) {
+    ref.read(taskSelectProvider.notifier).state = key;
+  }
+}
