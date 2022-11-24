@@ -22,7 +22,7 @@ class TaskListState extends StateNotifier<List<Task>> {
     _listEntryLoaded = false;
     _listTodyLoaded = false;
     _lisToday = [];
-    _cacheLists(ref.read(naviSelectProvider));
+    _getCacheLists(ref.read(naviSelectProvider));
   }
 
   late List<Task> _listentry;
@@ -32,7 +32,7 @@ class TaskListState extends StateNotifier<List<Task>> {
   //List<Task> _listToday;
 
   final Ref ref;
-  _cacheLists(navi) {
+  _getCacheLists(navi) {
     if (navi == Navi.inbox) {
       if (!_listEntryLoaded) {
         var box = Hive.box<Task>(Constants.boxNameTasks);
@@ -121,7 +121,7 @@ class TaskListState extends StateNotifier<List<Task>> {
       lNavi = ref.read(naviSelectProvider);
     }
 
-    _cacheLists(lNavi);
+    _getCacheLists(lNavi);
   }
 
   Future<int> addTask(title, description) async {
@@ -201,6 +201,7 @@ class TaskListState extends StateNotifier<List<Task>> {
     list.removeAt(idx);
     state = list.toList();
 
+    _saveCacheList();
     ref.read(taskSelectProvider.notifier).state = newid;
   }
 
