@@ -13,6 +13,9 @@ class Task extends HiveObject {
   @HiveField(2)
   int sort;
 
+  @HiveField(3, defaultValue: ItemLocation.inbox)
+  ItemLocation itemLocation;
+
   @HiveField(100)
   bool synSort;
 
@@ -24,7 +27,8 @@ class Task extends HiveObject {
       required this.description,
       this.sort = 0,
       this.synSort = true,
-      this.synUpdate = true});
+      this.synUpdate = true,
+      this.itemLocation = ItemLocation.inbox});
 }
 
 @HiveType(typeId: 2)
@@ -33,4 +37,14 @@ class Folder {
   String title;
 
   Folder(this.title);
+}
+
+@HiveType(typeId: 4)
+enum ItemLocation {
+  @HiveField(0)
+  inbox,
+  @HiveField(1)
+  today,
+  @HiveField(3)
+  ohter,
 }

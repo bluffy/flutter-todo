@@ -22,19 +22,23 @@ class TaskAdapter extends TypeAdapter<Task> {
       sort: fields[2] as int,
       synSort: fields[100] as bool,
       synUpdate: fields[101] as bool,
+      itemLocation:
+          fields[3] == null ? ItemLocation.inbox : fields[3] as ItemLocation,
     );
   }
 
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
       ..write(obj.description)
       ..writeByte(2)
       ..write(obj.sort)
+      ..writeByte(3)
+      ..write(obj.itemLocation)
       ..writeByte(100)
       ..write(obj.synSort)
       ..writeByte(101)
@@ -82,6 +86,50 @@ class FolderAdapter extends TypeAdapter<Folder> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is FolderAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class ItemLocationAdapter extends TypeAdapter<ItemLocation> {
+  @override
+  final int typeId = 4;
+
+  @override
+  ItemLocation read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return ItemLocation.inbox;
+      case 1:
+        return ItemLocation.today;
+      case 3:
+        return ItemLocation.ohter;
+      default:
+        return ItemLocation.inbox;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, ItemLocation obj) {
+    switch (obj) {
+      case ItemLocation.inbox:
+        writer.writeByte(0);
+        break;
+      case ItemLocation.today:
+        writer.writeByte(1);
+        break;
+      case ItemLocation.ohter:
+        writer.writeByte(3);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ItemLocationAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

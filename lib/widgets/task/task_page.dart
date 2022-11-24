@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../providers/task_provider.dart';
 import '../../utils/dialogs.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../widgets/task/display_tasks.dart';
+import 'task_list_view.dart';
 
 class TaskPage extends ConsumerWidget {
   TaskPage({Key? key}) : super(key: key);
@@ -89,7 +89,7 @@ class TaskPage extends ConsumerWidget {
                 child: SingleChildScrollView(
                     child: Column(
                   children: const [
-                    DispayTasks(),
+                    TaskListView(),
                   ],
                 ))),
           ),

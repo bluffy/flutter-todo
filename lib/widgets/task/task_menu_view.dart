@@ -13,6 +13,8 @@ class TaskMenuView extends ConsumerWidget {
 
     if (currentNavi != navi) {
       ref.read(naviSelectProvider.notifier).state = navi;
+      ref.read(taskListkProvider.notifier).loadState();
+
       if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
         Navigator.of(context).pop();
       }

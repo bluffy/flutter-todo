@@ -13,8 +13,8 @@ final tasksProvider = FutureProvider<List<Task>>((ref) async {
 });
 */
 
-class DispayTasks extends ConsumerWidget {
-  const DispayTasks({Key? key}) : super(key: key);
+class TaskListView extends ConsumerWidget {
+  const TaskListView({Key? key}) : super(key: key);
 
   Widget listItem(
       BuildContext context,

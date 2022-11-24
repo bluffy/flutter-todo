@@ -3,6 +3,7 @@ import 'package:flutter_todo/main.dart';
 import 'package:flutter_todo/models/task_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../core/constants.dart';
 
 enum TaskAction {
   none,
@@ -18,15 +19,32 @@ enum Navi {
 
 class TaskListState extends StateNotifier<List<Task>> {
   TaskListState(this.ref) : super([]) {
-    _fillFromHive();
+    _listentry = [];
+    _listEntryLoaded = false;
+    _cacheLists(ref.read(naviSelectProvider));
   }
 
+  late List<Task> _listentry;
+  late bool _listEntryLoaded;
+  //List<Task> _listToday;
+
   final Ref ref;
-  _fillFromHive() {
-    var box = Hive.box<Task>(boxNameTasks);
-    var list = box.values.toList();
-    _sortState(list);
-    debugPrint("_fillFromHive()");
+  _cacheLists(navi) {
+    if (navi == Navi.inbox) {
+      if (!_listEntryLoaded) {
+        var box = Hive.box<Task>(Constants.boxNameTasks);
+        _listentry = box.values
+            .where((element) => element.itemLocation == ItemLocation.inbox)
+            .toList();
+
+        _listEntryLoaded = true;
+      }
+      _sortState(_listentry);
+
+      debugPrint("_cacheLists()");
+    } else {
+      state = [];
+    }
   }
 
   int _getTaskIndex(List<Task> tasks, int key) {
@@ -66,6 +84,17 @@ class TaskListState extends StateNotifier<List<Task>> {
     state = [];
   }
 
+  loadState([Navi? navi]) {
+    Navi lNavi;
+    if (navi != null) {
+      lNavi = navi;
+    } else {
+      lNavi = ref.read(naviSelectProvider);
+    }
+
+    _cacheLists(lNavi);
+  }
+
   Future<int> addTask(title, description) async {
     final selectedId = getSelectedID();
     final tasks = state.toList();
@@ -73,7 +102,7 @@ class TaskListState extends StateNotifier<List<Task>> {
     final task = Task(title: title, description: description);
     task.synUpdate = true;
 
-    final id = await Hive.box<Task>(boxNameTasks).add(task);
+    final id = await Hive.box<Task>(Constants.boxNameTasks).add(task);
 
     if (selectedId == -1) {
       tasks.insert(0, task);
@@ -98,7 +127,7 @@ class TaskListState extends StateNotifier<List<Task>> {
     task!.title = title;
     task.description = description;
 
-    Hive.box<Task>(boxNameTasks).put(task.key, task);
+    Hive.box<Task>(Constants.boxNameTasks).put(task.key, task);
     //getList();
   }
 
@@ -117,7 +146,7 @@ class TaskListState extends StateNotifier<List<Task>> {
       newid = list[idx + 1].key!;
     }
 
-    var box = Hive.box<Task>(boxNameTasks);
+    var box = Hive.box<Task>(Constants.boxNameTasks);
     await box.delete(selectedID);
 
     list.removeAt(idx);
@@ -128,7 +157,7 @@ class TaskListState extends StateNotifier<List<Task>> {
 
   Task? getSelectedTask() {
     if (getSelectedID() != -1) {
-      var box = Hive.box<Task>(boxNameTasks);
+      var box = Hive.box<Task>(Constants.boxNameTasks);
       return box.get(getSelectedID());
     }
     return null;
