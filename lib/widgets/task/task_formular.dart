@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_todo/utils/dialogs.dart';
-import '../../models/task_model.dart';
 import '../../providers/task_provider.dart';
 
 class TaskFormular extends ConsumerWidget {

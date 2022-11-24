@@ -61,16 +61,16 @@ class TaskMenuView extends ConsumerWidget {
                       _selectPage(context, ref, Navi.inbox);
                     },
                     selected: (navi == Navi.inbox),
-                    leading: Icon(Icons.inbox),
-                    title: Text('inbox'),
+                    leading: const Icon(Icons.inbox),
+                    title: const Text('inbox'),
                   ),
                   ListTile(
                     onTap: () {
                       _selectPage(context, ref, Navi.today);
                     },
                     selected: (navi == Navi.today),
-                    leading: Icon(Icons.today),
-                    title: Text('Today'),
+                    leading: const Icon(Icons.today),
+                    title: const Text('Today'),
                   ),
                 ],
               ),

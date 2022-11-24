@@ -20,7 +20,7 @@ class TaskPage extends ConsumerWidget {
         appBar: AppBar(
             leading: hasDrawer
                 ? IconButton(
-                    icon: Icon(Icons.menu),
+                    icon: const Icon(Icons.menu),
                     // 4. open the drawer if we have one
                     onPressed:
                         hasDrawer ? () => ancestorScaffold.openDrawer() : null,
