@@ -258,6 +258,14 @@ class ProviderAction {
     }
   }
 
+  static int readSelectedID(WidgetRef ref) {
+    return ref.read(taskSelectProvider);
+  }
+
+  static int watchSelectedID(WidgetRef ref) {
+    return ref.watch(taskSelectProvider);
+  }
+
   static TaskAction watchAction(WidgetRef ref) {
     return ref.watch(taskActionProvider);
   }
@@ -268,6 +276,19 @@ class ProviderAction {
 
   static int watchSeletedID(WidgetRef ref) {
     return ref.watch(taskSelectProvider);
+  }
+
+  static Navi readSelectedNavi(WidgetRef ref) {
+    return ref.read(naviSelectProvider);
+  }
+
+  static Navi watchSelectedNavi(WidgetRef ref) {
+    return ref.watch(naviSelectProvider);
+  }
+
+  static Task? readSelectedTask(WidgetRef ref) {
+    return Hive.box<Task>(Constants.boxNameTasks)
+        .get(ProviderAction.readSelectedID(ref));
   }
 
   static closeFormular(WidgetRef ref) {

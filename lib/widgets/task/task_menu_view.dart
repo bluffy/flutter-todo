@@ -48,23 +48,35 @@ class TaskMenuView extends ConsumerWidget {
     );
     */
 
-  Widget dragTargetMenuItem(
-      BuildContext context, WidgetRef ref, bool selected, Navi navi) {
-    print("<<<<<<<<<<<<<build");
+  Widget dragTargetMenuItem(BuildContext context, WidgetRef ref, Navi navi) {
+    final selectedNavi = ProviderAction.watchSelectedNavi(ref);
+    String title;
+    late Icon icon;
+    switch (navi) {
+      case Navi.inbox:
+        title = 'Eingang';
+        icon = const Icon(Icons.inbox);
+        break;
+      case Navi.today:
+        title = 'Heute';
+        icon = const Icon(Icons.today);
+        break;
+      default:
+        title = '<<Unknown>>';
+    }
     return DragTarget(
         builder: (context, candidateData, rejectedData) {
           return ListTile(
             onTap: () {
               _selectPage(context, ref, navi);
             },
-            selected: selected,
-            leading: const Icon(Icons.inbox),
-            title: const Text('inbox'),
+            selected: navi == selectedNavi,
+            leading: icon,
+            title: Text(title),
           );
         },
-        onWillAccept: (data) => false,
+        onWillAccept: (data) => navi != selectedNavi,
         onAccept: (int data) {
-          print("test");
           /*
       ref
           .read(taskListkProvider.notifier)
@@ -110,8 +122,8 @@ class TaskMenuView extends ConsumerWidget {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: <Widget>[
-                  dragTargetMenuItem(context, ref,
-                      ref.watch(naviSelectProvider) == Navi.inbox, Navi.inbox),
+                  dragTargetMenuItem(context, ref, Navi.inbox),
+                  dragTargetMenuItem(context, ref, Navi.today),
                   /*
                   ListTile(
                     onTap: () {
@@ -121,14 +133,6 @@ class TaskMenuView extends ConsumerWidget {
                     leading: const Icon(Icons.inbox),
                     title: const Text('inbox'),
                   ),*/
-                  ListTile(
-                    onTap: () {
-                      _selectPage(context, ref, Navi.today);
-                    },
-                    selected: (ref.watch(naviSelectProvider) == Navi.today),
-                    leading: const Icon(Icons.today),
-                    title: const Text('Today'),
-                  ),
                 ],
               ),
             ),
