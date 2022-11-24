@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter_todo/screens/task_screen.dart.old';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import './models/task_model.dart';
-import './screens/task_screen.dart';
+import 'package:flutter_todo/screens/task_screen.dart';
+import 'package:flutter_todo/models/task_model.dart';
 
 const String boxNameTasks = "t";
 const String boxNameFolders = "f";
@@ -32,7 +31,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.from(colorScheme: const ColorScheme.light()),
       darkTheme: ThemeData.from(colorScheme: const ColorScheme.dark()),
       initialRoute: '/',
-      routes: {'/': (context) => const TaskPage()},
+      routes: {'/': (context) => const TaskScreen()},
     );
   }
 }

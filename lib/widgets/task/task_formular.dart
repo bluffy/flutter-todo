@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_todo/utils/dialogs.dart';
 import '../../models/task_model.dart';
+import '../../providers/task_provider.dart';
 
 class TaskFormular extends ConsumerWidget {
   TaskFormular({Key? key}) : super(key: key);
@@ -10,14 +11,14 @@ class TaskFormular extends ConsumerWidget {
   final TextEditingController descController = TextEditingController();
   final FocusNode titleFocus = FocusNode();
 
-  Widget formularFooter(context, taskNotifier, action) {
+  Widget formularFooter(context, taskListState, action) {
     return Row(
       children: [
         Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton.icon(
               onPressed: () {
-                taskFormularsave(context, taskNotifier, action);
+                taskFormularsave(context, taskListState, action);
               },
               icon: const Icon(Icons.save),
               label: const Text('Speichern'),
@@ -30,7 +31,7 @@ class TaskFormular extends ConsumerWidget {
                     context: context,
                     text: "Wirklich Abreche",
                     onPressedOk: () {
-                      taskNotifier.closeFormular();
+                      taskListState.closeFormular();
                       Navigator.pop(context);
                     });
               },
@@ -44,7 +45,7 @@ class TaskFormular extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint("build Taskformular");
-    final taskNotifier = ref.watch(taskskProvider.notifier);
+    final taskListState = ref.watch(taskListkProvider.notifier);
     final action = ref.watch(taskActionProvider.notifier).state;
 
     taskFormularfill(context, ref);
@@ -90,7 +91,7 @@ class TaskFormular extends ConsumerWidget {
                               border: UnderlineInputBorder(),
                             ),
                           )),
-                      formularFooter(context, taskNotifier, action),
+                      formularFooter(context, taskListState, action),
                     ]),
               ),
             )
@@ -101,7 +102,7 @@ class TaskFormular extends ConsumerWidget {
   }
 
   void taskFormularfill(BuildContext context, WidgetRef ref) async {
-    final taskNotifier = ref.read(taskskProvider.notifier);
+    final taskListState = ref.read(taskListkProvider.notifier);
     final action = ref.read(taskActionProvider.notifier).state;
 
     if (action == TaskAction.add) {
@@ -112,11 +113,11 @@ class TaskFormular extends ConsumerWidget {
     }
 
     if (action == TaskAction.save) {
-      final task = taskNotifier.getSelectedTask();
+      final task = taskListState.getSelectedTask();
       if (task == null) {
         CustomDialog.showAlertDialog(
             context: context, text: "Task nicht vorhanden!");
-        taskNotifier.closeFormular();
+        taskListState.closeFormular();
         return;
       }
       titleController.text = task.title;
@@ -130,7 +131,7 @@ class TaskFormular extends ConsumerWidget {
   }
 
   void taskFormularsave(
-      context, TaskNotifier taskNotifier, TaskAction action) async {
+      context, TaskListState taskListState, TaskAction action) async {
     bool checkFields() {
       if (titleController.text.isNotEmpty) {
         //  _createTask();
@@ -150,12 +151,12 @@ class TaskFormular extends ConsumerWidget {
     final String description = descController.text;
 
     if (action == TaskAction.add) {
-      await taskNotifier.addTask(title, description);
-      taskNotifier.closeFormular();
+      await taskListState.addTask(title, description);
+      taskListState.closeFormular();
       /*
       try {
-        await taskNotifier.addTask(title, description);
-        taskNotifier.closeFormular();
+        await taskListState.addTask(title, description);
+        taskListState.closeFormular();
       } catch (e, stacktrace) {
         debugPrint(e.toString());
         debugPrintStack(stackTrace: stacktrace);
@@ -169,8 +170,8 @@ class TaskFormular extends ConsumerWidget {
 
     if (action == TaskAction.save) {
       try {
-        await taskNotifier.updateTask(title, description);
-        taskNotifier.closeFormular();
+        await taskListState.updateTask(title, description);
+        taskListState.closeFormular();
       } catch (e, stacktrace) {
         debugPrint(e.toString());
         debugPrintStack(stackTrace: stacktrace);

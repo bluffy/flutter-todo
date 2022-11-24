@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/task_model.dart';
 import './task_formular.dart';
+import '../../providers/task_provider.dart';
 //import '../../utils/date.dart';
 
 /*
@@ -23,7 +24,7 @@ class DispayTasks extends ConsumerWidget {
       int idxTask,
       int selectId,
       TaskAction action,
-      TaskNotifier taskNotifier) {
+      TaskListState taskListState) {
     return Row(children: [
       Checkbox(
           value: false,
@@ -34,9 +35,9 @@ class DispayTasks extends ConsumerWidget {
                 ? () {
                     if (action == TaskAction.none) {
                       if (selectId == tasks[idxTask].key) {
-                        taskNotifier.openFormular(TaskAction.save);
+                        taskListState.openFormular(TaskAction.save);
                       } else {
-                        taskNotifier.selectTask(tasks[idxTask].key!);
+                        taskListState.selectTask(tasks[idxTask].key!);
                       }
                     }
                   }
@@ -52,8 +53,14 @@ class DispayTasks extends ConsumerWidget {
     ]);
   }
 
-  Widget dragTarget(BuildContext context, WidgetRef ref, bool last,
-      List<Task> tasks, int idxTask, int selectId, TaskNotifier taskNotifier) {
+  Widget dragTarget(
+      BuildContext context,
+      WidgetRef ref,
+      bool last,
+      List<Task> tasks,
+      int idxTask,
+      int selectId,
+      TaskListState taskListState) {
     double height(candidateData) {
       if (candidateData.isNotEmpty) {
         return 30.0;
@@ -70,12 +77,12 @@ class DispayTasks extends ConsumerWidget {
       },
       onAccept: (int data) {
         if (last) {
-          taskNotifier.doListSorting(sourceID: data, last: true);
+          taskListState.doListSorting(sourceID: data, last: true);
         } else {
-          taskNotifier.doListSorting(
+          taskListState.doListSorting(
               targetID: tasks[idxTask].key, sourceID: data);
         }
-        // taskNotifier.doListSorting( targetID, targetSort, sourceID)
+        // taskListState.doListSorting( targetID, targetSort, sourceID)
       },
     );
   }
@@ -84,9 +91,9 @@ class DispayTasks extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint("build DispayTasks");
 
-    final taskNotifier = ref.watch(taskskProvider.notifier);
+    final taskListState = ref.watch(taskListkProvider.notifier);
 
-    List<Task> tasks = ref.watch(taskskProvider);
+    List<Task> tasks = ref.watch(taskListkProvider);
     TaskAction action = ref.watch(taskActionProvider);
     final selectId = ref.watch(taskSelectProvider);
 
@@ -109,7 +116,7 @@ class DispayTasks extends ConsumerWidget {
                           action == TaskAction.save,
                       child: TaskFormular()),
                   dragTarget(context, ref, false, tasks, idxTask, selectId,
-                      taskNotifier),
+                      taskListState),
                   Visibility(
                     visible: (action == TaskAction.save &&
                             selectId != tasks[idxTask].key) ||
@@ -130,19 +137,19 @@ class DispayTasks extends ConsumerWidget {
                               width: constraints.maxWidth,
                               height: 40.0,
                               child: listItem(context, ref, true, tasks,
-                                  idxTask, selectId, action, taskNotifier),
+                                  idxTask, selectId, action, taskListState),
                             ),
                           ),
                         ),
                         child: listItem(context, ref, false, tasks, idxTask,
-                            selectId, action, taskNotifier),
+                            selectId, action, taskListState),
                       ),
                     ),
                   ),
                   Visibility(
                     visible: tasks.last.key == tasks[idxTask].key,
                     child: dragTarget(context, ref, true, tasks, idxTask,
-                        selectId, taskNotifier),
+                        selectId, taskListState),
                   ),
                   Visibility(
                       visible: selectId == tasks[idxTask].key &&
