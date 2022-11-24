@@ -45,6 +45,12 @@ enum TaskAction {
   save,
 }
 
+enum Navi {
+  inbox,
+  today,
+  folder,
+}
+
 class TaskNotifier extends StateNotifier<List<Task>> {
   TaskNotifier(this.ref) : super([]) {
     _fillFromHive();
@@ -53,11 +59,15 @@ class TaskNotifier extends StateNotifier<List<Task>> {
   final Ref ref;
 
   //List<Task>
+  int _getTaskIndex(List<Task> tasks, int key) {
+    return tasks.indexWhere((Task task) => task.key == key);
+  }
+
   _reSort(List<Task> list) {
     //var tasks = list.toList();
     var cnt = 0;
     for (var task in list.reversed.toList()) {
-      cnt = cnt + 1;
+      cnt = cnt + 2;
       if (task.sort != cnt) {
         task.sort = cnt;
         task.synSort = true;
@@ -67,15 +77,6 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     // return tasks;
   }
 
-  _sortList(List<Task> tasks) {
-    var list = tasks.toList();
-    if (list.length > 1) {
-      list.sort((a, b) => -a.sort.compareTo(b.sort));
-      return list;
-    }
-    return list;
-  }
-
   _sortState([List<Task>? ptasks]) {
     List<Task> tasks;
     if (ptasks != null) {
@@ -83,44 +84,35 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     } else {
       tasks = state;
     }
+
     if (tasks.isNotEmpty) {
-      state = _sortList(tasks);
+      if (tasks.length > 1) {
+        tasks.sort((a, b) => -a.sort.compareTo(b.sort));
+      }
+
+      state = tasks;
+      return;
     }
+
+    state = [];
   }
 
   Future<int> addTask(title, description) async {
-    //final selectedTask = getSelectedTask();
+    final selectedId = getSelectedID();
+    final tasks = state.toList();
 
     final task = Task(title: title, description: description);
     task.synUpdate = true;
 
-    var box = Hive.box<Task>(boxNameTasks);
+    final id = await Hive.box<Task>(boxNameTasks).add(task);
 
-    var tasks = state.toList();
-    var id = await box.add(task);
-
-    var selectedTask = getSelectedTask();
-
-    if (selectedTask == null) {
-      var max = maxBy(tasks, (task) => task.sort);
-      task.sort = (max == null) ? 1 : max.sort + 1;
-      tasks.add(task);
+    if (selectedId == -1) {
+      tasks.insert(0, task);
     } else {
-      task.sort = selectedTask.sort;
-      tasks.add(task);
-      Map<int, Task> saveList = {};
-      for (var taskElement in tasks) {
-        taskElement.sort = taskElement.sort + 1;
-        taskElement.synSort = true;
-        saveList[taskElement.key] == taskElement;
-        if (taskElement.key == selectedTask.key) {
-          break;
-        }
-      }
-
-      box.putAll(saveList);
+      final idx = _getTaskIndex(tasks, selectedId);
+      tasks.insert(idx + 1, task);
     }
-
+    _reSort(tasks);
     _sortState(tasks);
 
     ref.read(taskActionProvider.notifier).state = TaskAction.none;
@@ -133,13 +125,11 @@ class TaskNotifier extends StateNotifier<List<Task>> {
   }
 
   Future<void> updateTask(String title, String description) async {
-    var box = Hive.box<Task>(boxNameTasks);
-
     var task = getSelectedTask();
     task!.title = title;
     task.description = description;
 
-    box.put(task.key, task);
+    Hive.box<Task>(boxNameTasks).put(task.key, task);
     //getList();
   }
 
@@ -151,7 +141,7 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     }
     final list = state.toList();
 
-    int idx = list.indexWhere((Task task) => task.key == selectedID);
+    int idx = _getTaskIndex(list, selectedID);
     var newid = -1;
 
     if (idx != -1 && idx != list.length - 1) {
@@ -166,22 +156,6 @@ class TaskNotifier extends StateNotifier<List<Task>> {
 
     ref.read(taskSelectProvider.notifier).state = newid;
     closeFormular();
-    //getList();
-
-/*
-    int idx = list.indexWhere((Task task) => task.id == selectedID);
-
-    var newid = "";
-
-
-
-    await DBHelper.removeTask(selectedID);
-
-    ref.read(taskSelectProvider.notifier).state = newid;
-    closeFormular();
-
-    getList();
-    */
   }
 
   Task? getSelectedTask() {
@@ -197,13 +171,6 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     var list = box.values.toList();
     _sortState(list);
     debugPrint("_fillFromHive()");
-    //state = box.values.toList();
-
-/*
-    List<Map<String, dynamic>> tasks = await DBHelper.taskList();
-
-    state = tasks.map((data) => Task.fromJson(data)).toList();
-    */
   }
 
   doListSorting({int? targetID, required int sourceID, bool? last}) async {
@@ -214,99 +181,24 @@ class TaskNotifier extends StateNotifier<List<Task>> {
     if (sourceTask.key == null) {
       return;
     }
-    final targetTask = tasks.singleWhere((task) => task.key == targetID,
-        orElse: () => Task(title: "", description: ""));
-    if (targetTask.key == null) {
-      return;
-    }
 
-    int idxSourceTask = tasks.indexWhere((Task task) => task.key == sourceID);
+    int idxSourceTask = _getTaskIndex(tasks, sourceID);
+    if (idxSourceTask == -1) return;
 
     tasks.removeAt(idxSourceTask);
 
-    int idxTarget = tasks.indexWhere((Task task) => task.key == targetID);
-
-    tasks.insert(idxTarget, sourceTask);
+    if (last != null && last == true) {
+      tasks.add(sourceTask);
+    } else {
+      int idxTarget = _getTaskIndex(tasks, targetID!);
+      if (idxTarget == -1) return;
+      tasks.insert(idxTarget, sourceTask);
+    }
 
     _reSort(tasks);
     _sortState(tasks);
 
-/*
-    Map<int, Task> saveList = {};
-    for (var task in tasks) {
-      var taskBox = box.get(task.key);
-      if (taskBox != null && task.sort != taskBox.sort) {
-        task.synSort = true;
-        saveList[task.key] = task;
-      }
-    }
-
-    */
-    for (var task in tasks) {
-      task.synSort = true;
-      task.save();
-    }
-
     state = tasks.toList();
-    /*
-    final tasks = state.toList();
-    final targetTask = tasks.singleWhere((task) => task.key == targetID,
-        orElse: () => Task(title: "", description: ""));
-    if (targetTask.key == null) {
-      return;
-    }
-    final sourceTask = tasks.singleWhere((task) => task.key == sourceID,
-        orElse: () => Task(title: "", description: ""));
-    if (sourceTask.key == null) {
-      return;
-    }
-
-    if (sourceTask.sort == targetTask.sort) {
-      return;
-    }
-    Map<int, Task> saveList = {};
-    var inLoop = false;
-    if (sourceTask.sort < targetTask.sort) {
-      for (var taskEelement in tasks) {
-        if (taskEelement.key == targetID) {
-          inLoop = true;
-        }
-        if (taskEelement.key == sourceID) {
-          taskEelement.sort = targetTask.sort;
-          taskEelement.synSort = true;
-          saveList[taskEelement.key] = taskEelement;
-          inLoop = false;
-          break;
-        }
-        if (inLoop) {
-          taskEelement.sort = taskEelement.sort - 1;
-          taskEelement.synSort = true;
-          saveList[taskEelement.key] = taskEelement;
-        }
-      }
-      _sortState(tasks);
-      var box = Hive.box<Task>(boxNameTasks);
-      box.putAll(saveList);
-    }
-    */
-
-    /*
-    if (last != null && last) {
-      await DBHelper.doListSorting(null, sourceID, last);
-      getList();
-      return;
-    }
-
-    if (targetID == null) {
-      return;
-    }
-
-    if (targetID == sourceID) {
-      return;
-    }
-    await DBHelper.doListSorting(targetID, sourceID, false);
-    getList();
-    */
   }
 
   selectTask(int taskID) {
@@ -332,6 +224,7 @@ class TaskNotifier extends StateNotifier<List<Task>> {
 
 final taskActionProvider = StateProvider((ref) => TaskAction.none);
 final taskSelectProvider = StateProvider((ref) => -1);
+final naviSelectProvider = StateProvider((ref) => Navi.inbox);
 
 final taskskProvider = StateNotifierProvider<TaskNotifier, List<Task>>((ref) {
   return TaskNotifier(ref);

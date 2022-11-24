@@ -7,7 +7,7 @@ import '../widgets/task/display_tasks.dart';
 
 class TaskPage extends StatelessWidget {
   static const breakpoint = 600.0;
-  static const menuWidth = 240.0;
+  static const menuWidth = 340.0;
 
   const TaskPage({super.key});
 
@@ -51,7 +51,9 @@ class TasksView extends ConsumerWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint("build Taskview");
+    final ancestorScaffold = Scaffold.maybeOf(context);
+    final hasDrawer = ancestorScaffold != null && ancestorScaffold.hasDrawer;
+
     final action = ref.watch(taskActionProvider);
 
     // ref.read(taskskProvider.notifier).getList();
@@ -62,6 +64,14 @@ class TasksView extends ConsumerWidget {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+            leading: hasDrawer
+                ? IconButton(
+                    icon: Icon(Icons.menu),
+                    // 4. open the drawer if we have one
+                    onPressed:
+                        hasDrawer ? () => ancestorScaffold!.openDrawer() : null,
+                  )
+                : null,
             flexibleSpace: GestureDetector(
               onTap: () {
                 taskNotifier.unSelectTask();
@@ -151,10 +161,25 @@ class TasksView extends ConsumerWidget {
 class TaskMenuView extends ConsumerWidget {
   const TaskMenuView({super.key});
 
+  void _selectPage(BuildContext context, WidgetRef ref, Navi navi) {
+    var currentNavi = ref.read(naviSelectProvider);
+    if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+      Navigator.of(context).pop();
+    }
+
+    if (currentNavi != navi) {
+      ref.read(naviSelectProvider.notifier).state = navi;
+      if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskNotifier = ref.read(taskskProvider.notifier);
     final action = ref.watch(taskActionProvider);
+    final navi = ref.watch(naviSelectProvider);
 
     return Scaffold(
         appBar: AppBar(
@@ -182,7 +207,27 @@ class TaskMenuView extends ConsumerWidget {
                   : null,
               width: double.infinity,
               height: double.infinity,
-              child: const Text(""),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  ListTile(
+                    onTap: () {
+                      _selectPage(context, ref, Navi.inbox);
+                    },
+                    selected: (navi == Navi.inbox),
+                    leading: Icon(Icons.inbox),
+                    title: Text('inbox'),
+                  ),
+                  ListTile(
+                    onTap: () {
+                      _selectPage(context, ref, Navi.today);
+                    },
+                    selected: (navi == Navi.today),
+                    leading: Icon(Icons.today),
+                    title: Text('Today'),
+                  ),
+                ],
+              ),
             ),
           ),
         ));
