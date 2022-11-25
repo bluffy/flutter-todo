@@ -30,3 +30,8 @@ Layouts:
 
 
 flutter packages pub run build_runner build
+
+# releas web
+flutter build web --release
+
+
