@@ -6,18 +6,10 @@ class TaskMenuView extends ConsumerWidget {
   const TaskMenuView({super.key});
 
   void _selectPage(BuildContext context, WidgetRef ref, Navi navi) {
-    var currentNavi = ref.read(naviSelectProvider);
+    ref.read(taskListkProvider.notifier).loadState(navi);
+
     if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
       Navigator.of(context).pop();
-    }
-
-    if (currentNavi != navi) {
-      ref.read(naviSelectProvider.notifier).state = navi;
-      ref.read(taskListkProvider.notifier).loadState();
-
-      if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
-        Navigator.of(context).pop();
-      }
     }
   }
 
@@ -49,7 +41,7 @@ class TaskMenuView extends ConsumerWidget {
     */
 
   Widget dragTargetMenuItem(BuildContext context, WidgetRef ref, Navi navi) {
-    final selectedNavi = ProviderAction.watchSelectedNavi(ref);
+    final selectedNavi = ref.watch(naviSelectProvider);
     String title;
     late Icon icon;
     switch (navi) {
@@ -65,11 +57,13 @@ class TaskMenuView extends ConsumerWidget {
         title = '<<Unknown>>';
     }
     return DragTarget(
-        builder: (context, candidateData, rejectedData) {
+        builder: (ctxDragTarget, candidateData, rejectedData) {
           return ListTile(
-            onTap: () {
-              _selectPage(context, ref, navi);
-            },
+            onTap: (ref.read(naviSelectProvider) != navi)
+                ? () {
+                    _selectPage(context, ref, navi);
+                  }
+                : null,
             selected: navi == selectedNavi,
             leading: icon,
             title: Text(title),
@@ -77,13 +71,11 @@ class TaskMenuView extends ConsumerWidget {
         },
         onWillAccept: (data) => navi != selectedNavi,
         onAccept: (int data) {
-          /*
-      ref
-          .read(taskListkProvider.notifier)
-          .doListSortingFromMenu(sourceID: data);
-          */
-          /*
-      ref
+          ref
+              .read(taskListkProvider.notifier)
+              .doListSortingFromMenu(data, navi);
+
+          /*ref
           .read(taskListkProvider.notifier)
           .doListSortingFromMenu(sourceID: data);
 */

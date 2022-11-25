@@ -19,48 +19,46 @@ enum Navi {
 class TaskListState extends StateNotifier<List<Task>> {
   TaskListState(this.ref) : super([]) {
     _listentry = [];
-    _listEntryLoaded = false;
-    _listTodyLoaded = false;
     _lisToday = [];
-    _getCacheLists(ref.read(naviSelectProvider));
+    _fillCache(ref.read(naviSelectProvider));
   }
 
   late List<Task> _listentry;
-  late bool _listEntryLoaded;
   late List<Task> _lisToday;
-  late bool _listTodyLoaded;
   //List<Task> _listToday;
 
   final Ref ref;
-  _getCacheLists(navi) {
-    if (navi == Navi.inbox) {
-      if (!_listEntryLoaded) {
-        var box = Hive.box<Task>(Constants.boxNameTasks);
-        _listentry = box.values
-            .where((element) => element.itemLocation == ItemLocation.inbox)
-            .toList();
-
-        _listEntryLoaded = true;
-      }
-      state = _listentry.toList();
-    } else {
-      if (!_listTodyLoaded) {
-        var box = Hive.box<Task>(Constants.boxNameTasks);
-        _lisToday = box.values
-            .where((element) => element.itemLocation == ItemLocation.today)
-            .toList();
-
-        _listTodyLoaded = true;
-      }
-      state = _lisToday.toList();
+  List<Task> _getNaviList(navi) {
+    switch (navi) {
+      case Navi.today:
+        return _lisToday.toList();
+      default:
+        return _listentry.toList();
     }
-    _sortState();
-    debugPrint("_cacheLists()");
   }
 
-  _saveCacheList() {
-    final selectedNavi = getSelectedNavi();
-    switch (selectedNavi) {
+  _fillCache(Navi navi) {
+    var box = Hive.box<Task>(Constants.boxNameTasks);
+    for (var task in box.values) {
+      if (task.itemLocation == ItemLocation.inbox) {
+        _listentry.add(task);
+      } else if (task.itemLocation == ItemLocation.today) {
+        _lisToday.add(task);
+      }
+    }
+    _sortList(_listentry);
+    _setSortInTaskItems(_listentry);
+
+    _sortList(_lisToday);
+    _setSortInTaskItems(_lisToday);
+
+    state = _getNaviList(navi);
+  }
+
+  _saveCache(List<Task> tasks, Navi navi) {
+    state = tasks.toList();
+
+    switch (navi) {
       case Navi.inbox:
         _listentry = state.toList();
         break;
@@ -95,24 +93,6 @@ class TaskListState extends StateNotifier<List<Task>> {
     }
   }
 
-  _sortState([List<Task>? ptasks]) {
-    List<Task> tasks;
-    if (ptasks != null) {
-      tasks = ptasks;
-    } else {
-      tasks = state;
-    }
-
-    if (tasks.isNotEmpty) {
-      _sortList(tasks);
-
-      state = tasks;
-      return;
-    }
-
-    state = [];
-  }
-
   loadState([Navi? navi]) {
     Navi lNavi;
     if (navi != null) {
@@ -121,18 +101,20 @@ class TaskListState extends StateNotifier<List<Task>> {
       lNavi = ref.read(naviSelectProvider);
     }
 
-    _getCacheLists(lNavi);
+    ref.read(taskSelectProvider.notifier).state = -1;
+    state = _getNaviList(navi);
+    ref.read(naviSelectProvider.notifier).state = lNavi;
   }
 
   Future<int> addTask(title, description) async {
     final selectedId = getSelectedID();
     final tasks = state.toList();
-    final selectedNavi = getSelectedNavi();
+    final navi = getSelectedNavi();
     //late ItemLocation location;
 
     final task = Task(title: title, description: description);
 
-    switch (selectedNavi) {
+    switch (navi) {
       case Navi.inbox:
         task.itemLocation = ItemLocation.inbox;
         break;
@@ -153,10 +135,10 @@ class TaskListState extends StateNotifier<List<Task>> {
       final idx = _getTaskIndex(tasks, selectedId);
       tasks.insert(idx + 1, task);
     }
-    _setSortInTaskItems(tasks);
-    _sortState(tasks);
 
-    _saveCacheList();
+    _setSortInTaskItems(tasks);
+
+    _saveCache(tasks, navi);
 
     ref.read(taskActionProvider.notifier).state = TaskAction.none;
     ref.read(taskSelectProvider.notifier).state = id;
@@ -182,26 +164,26 @@ class TaskListState extends StateNotifier<List<Task>> {
 
   Future<void> removeTask() async {
     final selectedID = getSelectedID();
+    final navi = ref.read(naviSelectProvider);
 
     if (selectedID == -1) {
       return;
     }
-    final list = state.toList();
+    final tasks = state.toList();
 
-    int idx = _getTaskIndex(list, selectedID);
+    int idx = _getTaskIndex(tasks, selectedID);
     var newid = -1;
 
-    if (idx != -1 && idx != list.length - 1) {
-      newid = list[idx + 1].key!;
+    if (idx != -1 && idx != tasks.length - 1) {
+      newid = tasks[idx + 1].key!;
     }
 
     var box = Hive.box<Task>(Constants.boxNameTasks);
     await box.delete(selectedID);
 
-    list.removeAt(idx);
-    state = list.toList();
+    tasks.removeAt(idx);
 
-    _saveCacheList();
+    _saveCache(tasks, navi);
     ref.read(taskSelectProvider.notifier).state = newid;
   }
 
@@ -214,16 +196,13 @@ class TaskListState extends StateNotifier<List<Task>> {
   }
 
   doListSorting({int? targetID, required int sourceID, bool? last}) async {
+    final navi = ref.read(naviSelectProvider);
     var tasks = state.toList();
-
-    final sourceTask = tasks.singleWhere((task) => task.key == sourceID,
-        orElse: () => Task(title: "", description: ""));
-    if (sourceTask.key == null) {
-      return;
-    }
 
     int idxSourceTask = _getTaskIndex(tasks, sourceID);
     if (idxSourceTask == -1) return;
+
+    var sourceTask = tasks[idxSourceTask];
 
     tasks.removeAt(idxSourceTask);
 
@@ -236,9 +215,46 @@ class TaskListState extends StateNotifier<List<Task>> {
     }
 
     _setSortInTaskItems(tasks);
-    _sortState(tasks);
+    _saveCache(tasks, navi);
+  }
 
-    state = tasks.toList();
+  doListSortingFromMenu(int sourceID, Navi targetNavi) async {
+    final navi = ref.read(naviSelectProvider);
+
+    if (targetNavi == ref.read(naviSelectProvider)) {
+      return;
+    }
+    var tasks = state.toList();
+
+    int idxSourceTask = _getTaskIndex(tasks, sourceID);
+    var sourceTask = tasks[idxSourceTask];
+
+    if (idxSourceTask == -1) return;
+    tasks.removeAt(idxSourceTask);
+
+    switch (targetNavi) {
+      case Navi.inbox:
+        sourceTask.itemLocation = ItemLocation.inbox;
+        _listentry.insert(0, sourceTask);
+        _setSortInTaskItems(_listentry);
+        break;
+      case Navi.today:
+        sourceTask.itemLocation = ItemLocation.today;
+        _lisToday.insert(0, sourceTask);
+        _setSortInTaskItems(_lisToday);
+        break;
+      default:
+        sourceTask.itemLocation = ItemLocation.inbox;
+        _listentry.insert(0, sourceTask);
+        _setSortInTaskItems(_listentry);
+    }
+
+    _setSortInTaskItems(tasks);
+    _saveCache(tasks, navi);
+
+    ref.read(taskSelectProvider.notifier).state = -1;
+
+    //_sortList(tasks);
   }
 }
 
@@ -292,6 +308,7 @@ class ProviderAction {
   }
 
   static closeFormular(WidgetRef ref) {
+    ref.read(taskSelectProvider.notifier).state = -1;
     ref.read(taskActionProvider.notifier).state = TaskAction.none;
   }
 
